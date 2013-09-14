@@ -1,15 +1,19 @@
 package net.stormdev.ucars.race;
 
 public class Lang {
-public static String get(String key){
+	main plugin = null;
+	public Lang(main main){
+		this.plugin = main;
+	}
+public String get(String key){
     String val = getRaw(key);
     val = main.colorise(val);
 	return val;
 }
-public static String getRaw(String key){
-	if(!main.lang.contains(key)){
+public String getRaw(String key){
+	if(!plugin.lang.contains(key)){
 		return key;
 	}
-	return main.lang.getString(key);
+	return plugin.lang.getString(key);
 }
 }

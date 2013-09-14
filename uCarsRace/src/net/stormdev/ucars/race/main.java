@@ -5,11 +5,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
+import net.stormdev.ucars.utils.RaceTrackManager;
+import net.stormdev.ucars.utils.TrackCreator;
+
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,12 +21,10 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.useful.ucars.Colors;
-import com.useful.ucars.uCarsCommandExecutor;
-import com.useful.ucars.uCarsListener;
 import com.useful.ucars.ucars;
 
 public class main extends JavaPlugin {
-	public static YamlConfiguration lang = new YamlConfiguration();
+	public YamlConfiguration lang = new YamlConfiguration();
 	public static main plugin;
 	public static FileConfiguration config = new YamlConfiguration();
 	public static Colors colors; 
@@ -31,7 +32,9 @@ public class main extends JavaPlugin {
 	public static ucars ucars = null;
 	public static URaceCommandExecutor cmdExecutor = null;
 	public static URaceListener listener = null;
-	
+	public RaceTrackManager trackManager = null;
+	public static HashMap<String, TrackCreator> trackCreators = new HashMap<String, TrackCreator>();
+	public static Lang msgs = null;
 	public void onEnable(){
 		plugin = this;
 		File langFile = new File(getDataFolder().getAbsolutePath()
@@ -50,6 +53,7 @@ public class main extends JavaPlugin {
 		} catch (Exception e1) {
 			getLogger().log(Level.WARNING, "Error creating/loading lang file! Regenerating..");
 		}
+		msgs = new Lang(this);
 		if (new File(getDataFolder().getAbsolutePath() + File.separator
 				+ "config.yml").exists() == false
 				|| new File(getDataFolder().getAbsolutePath() + File.separator
@@ -66,6 +70,41 @@ public class main extends JavaPlugin {
 		config = getConfig();
 		logger = new CustomLogger(getServer().getConsoleSender(), getLogger());
         try {
+        	//Setup the Lang file
+        	if(!lang.contains("general.cmd.playersOnly")){
+        		lang.set("general.cmd.playersOnly", "This command is for players only!");
+        	}
+        	if(!lang.contains("setup.create.start")){
+        		lang.set("setup.create.start", "Wand: %id% (%name%)");
+        	}
+        	if(!lang.contains("setup.create.lobby")){
+        		lang.set("setup.create.lobby", "Stand in the lobby and right click anywhere with the wand");
+        	}
+        	if(!lang.contains("setup.create.exit")){
+        		lang.set("setup.create.exit", "Stand at the track exit and right click anywhere with the wand");
+        	}
+        	if(!lang.contains("setup.create.grid")){
+        		lang.set("setup.create.grid", "Stand where you want a car to start the race and right click anywhere (Without the wand). Repeat for all the starting positions. When done, right click anywhere with the wand");
+        	}
+        	if(!lang.contains("setup.create.checkpoints")){
+        		lang.set("setup.create.checkpoints", "Stand at each checkpoint along the track (Checkpoint 10x10 radius) and right click anywhere (Without the wand). Repeat for all checkpoints. When done, right click anywhere with the wand");
+        	}
+        	if(!lang.contains("setup.create.notEnoughCheckpoints")){
+        		lang.set("setup.create.notEnoughCheckpoints", "You must have at least 3 checkpoints! You only have: %num%");
+        	}
+        	if(!lang.contains("setup.create.line1")){
+        		lang.set("setup.create.line1", "Stand at one end of the start/finish line and right click anywhere with the wand");
+        	}
+        	if(!lang.contains("setup.create.line2")){
+        		lang.set("setup.create.line2", "Stand at the other end of the start/finish line and right click anywhere with the wand");
+        	}
+        	if(!lang.contains("setup.create.done")){
+        		lang.set("setup.create.done", "Successfully created Race Track %name%!");
+        	}
+        	//Setup the config
+        	if (!config.contains("setup.create.wand")) {
+				config.set("setup.create.wand", 280);
+			}
         	if (!config.contains("general.logger.colour")) {
 				config.set("general.logger.colour", true);
 			}
@@ -131,6 +170,7 @@ public class main extends JavaPlugin {
 		main.listener = new URaceListener(this);
 		getServer().getPluginManager().registerEvents(main.listener,
 				this);
+		this.trackManager = new RaceTrackManager(this, new File(getDataFolder()+File.separator+"Data"+File.separator+"tracks.uracetracks"));
 		logger.info("uCarsRace v"+plugin.getDescription().getVersion()+" has been enabled!");
 	}
 	

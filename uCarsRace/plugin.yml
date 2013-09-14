@@ -6,7 +6,7 @@ depend: [uCars]
 commands:
    urace:
         description: This is the setup of racetracks and admin commands
-        usage: /<command>
+        usage: /<command> [Create <TrackName>]
         permission: ucarsrace.admin
         permission-message: You don't have access to this command
         default: op
