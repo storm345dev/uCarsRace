@@ -191,13 +191,17 @@ public class URaceCommandExecutor implements CommandExecutor {
 				String trackName = args[1];
 				RaceTrack track = plugin.trackManager.getRaceTrack(trackName);
 				if(track == null){
-					//TODO Tell them it doesnt exist
+			    sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.delete.exists"));
 				return true;	
 				}
 				RaceQue que = new RaceQue(track);
 				trackName = track.getTrackName();
 				if(main.plugin.ques.containsKey(trackName)){
 					que = main.plugin.ques.get(trackName);
+				}
+				if(main.plugin.raceMethods.inAGame(player.getName())!=null || main.plugin.raceMethods.inGameQue(player.getName())!=null){
+					sender.sendMessage(main.colors.getError()+main.msgs.get("race.que.existing"));
+					return true;
 				}
 				main.plugin.gameScheduler.joinGame(player.getName(), track, que, trackName);
 				return true;

@@ -33,10 +33,14 @@ public class RaceMethods {
     public String inGameQue(String playername){
     	ArrayList<String> arenaNames = plugin.trackManager.getRaceTrackNames();
     	for(String arenaName:arenaNames){
-    		List<String> que = plugin.gameScheduler.getQue(plugin.raceQues.getQue(arenaName));
-    		if(que.contains(playername)){
-    			return arenaName;
-    		}
+    		try {
+				List<String> que = plugin.raceQues.getQue(arenaName).players;
+				if(que.contains(playername)){
+					return arenaName;
+				}
+			} catch (Exception e) {
+				return null;
+			}
     	}
     	return null;
     }

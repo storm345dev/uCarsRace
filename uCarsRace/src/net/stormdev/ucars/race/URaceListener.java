@@ -172,6 +172,10 @@ public class URaceListener implements Listener {
 		}
 		for(String playername:game.getInPlayers()){
 			Player player = plugin.getServer().getPlayer(playername);
+			if(player == null){
+				game.leave(playername);
+			}
+			else{
 			Location playerLoc = player.getLocation();
 			CheckpointCheck check = game.playerAtCheckpoint(player, plugin.getServer());
 			Boolean checkNewLap = false;
@@ -237,6 +241,7 @@ public class URaceListener implements Listener {
 					player.sendMessage("[DEBUG]Finished Race");
 					}
 				}
+			  }
 			}
 		}
 		plugin.gameScheduler.updateGame(game);

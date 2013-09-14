@@ -120,6 +120,9 @@ public class main extends JavaPlugin {
         	if(!lang.contains("setup.create.done")){
         		lang.set("setup.create.done", "Successfully created Race Track %name%!");
         	}
+        	if(!lang.contains("race.que.existing")){
+        		lang.set("race.que.existing", "You are already in a game que! Please leave it before joining this one!");
+        	}
         	if(!lang.contains("race.que.full")){
         		lang.set("race.que.full", "Race que full!");
         	}
@@ -161,7 +164,7 @@ public class main extends JavaPlugin {
 				config.set("general.logger.colour", true);
 			}
         	if (!config.contains("general.raceTickrate")) {
-				config.set("general.raceTickrare", 6l);
+				config.set("general.raceTickrate", 10l);
 			}
         	//Setup the colour scheme
         	if (!config.contains("colorScheme.success")) {
@@ -235,6 +238,10 @@ public class main extends JavaPlugin {
 	public void onDisable(){
 		if(ucars != null){
 			ucars.unHookPlugin(this);
+		}
+		HashMap<String, Race> games = this.gameScheduler.getGames();
+		for(Race r:games.values()){
+			this.gameScheduler.stopGame(r.getTrack(), r.getGameId());
 		}
 		logger.info("uCarsRace has been disabled!");
 	}

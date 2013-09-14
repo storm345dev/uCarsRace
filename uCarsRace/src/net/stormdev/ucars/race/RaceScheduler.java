@@ -38,10 +38,11 @@ public class RaceScheduler {
 		que.validatePlayers();
 		if(que.getHowManyPlayers() < que.getPlayerLimit() && plugin.getServer().getPlayer(playername).isOnline()){
 			if(plugin.getServer().getPlayer(playername).isOnline()){
-				que.addPlayer(playername);
+				//que.addPlayer(playername);
 				List<String> arenaque = que.getPlayers();
 				if(!arenaque.contains(playername)){
-					arenaque.add(playername);
+					que.addPlayer(playername);
+					//arenaque.add(playername);
 				}
 				for(String name:arenaque){
 					if(!(plugin.getServer().getPlayer(name).isOnline() && plugin.getServer().getPlayer(name) != null)){
@@ -59,6 +60,7 @@ public class RaceScheduler {
 				plugin.raceQues.setQue(trackName, que);
 				this.reCalculateQues();
 				plugin.getServer().getPlayer(playername).sendMessage(main.colors.getSuccess()+main.msgs.get("race.que.success"));
+				plugin.getServer().getPlayer(playername).teleport(track.getLobby(plugin.getServer()));
 				return true;
 			}
 		}
@@ -194,11 +196,11 @@ public class RaceScheduler {
 		this.games.put(game.getGameId(), game);
 		return;
 	}
-	public void stopGame(RaceTrack track, String trackName){
-		if(!trackInUse(trackName)){
+	public void stopGame(RaceTrack track, String gameId){
+		if(!trackInUse(track.getTrackName())){
 			return;
 		}
-		removeRace(trackName);
+		removeRace(gameId);
 		reCalculateQues();
 		return;
 	}
