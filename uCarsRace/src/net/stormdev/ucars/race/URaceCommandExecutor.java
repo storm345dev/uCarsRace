@@ -53,6 +53,20 @@ public class URaceCommandExecutor implements CommandExecutor {
 			    RaceTrack track = new RaceTrack(trackname, 2, 2);
 			    new TrackCreator(player, track); //Create the track
 			}
+			else if(command.equalsIgnoreCase("delete")){
+				if(args.length < 2){
+					return false;
+				}
+				String trackname = args[1];
+				if(!plugin.trackManager.raceTrackExists(trackname)){
+					sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.delete.exists"));
+					return true;
+				}
+				plugin.trackManager.deleteRaceTrack(trackname);
+				String msg = main.msgs.get("general.cmd.delete.success");
+				msg = msg.replaceAll("%name%", trackname);
+				return true;
+			}
 			//TODO
 			return true;
 		}
