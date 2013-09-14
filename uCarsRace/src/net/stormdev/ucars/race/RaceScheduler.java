@@ -4,29 +4,35 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import net.stormdev.ucars.utils.RaceQue;
 import net.stormdev.ucars.utils.RaceTrack;
+import net.stormdev.ucars.utils.SerializableLocation;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
+
+import com.useful.ucarsCommon.StatValue;
 
 /*
  * An adaptation of my Minigamez plugin Arena game scheduler. -Code is messy and 
  * weirdly named as a result
  */
 public class RaceScheduler {
-	//TODO NOTE: This code is probably highly invalid.
+	//TODO NOTE: This code is probably highly extraneous in places.
 	private HashMap<String, Race> games = new HashMap<String, Race>();
 	private main plugin;
+	Random random = null;
 	public RaceScheduler(){
 		this.plugin = main.plugin;
+		random = new Random();
 	}
 	public Boolean joinGame(String playername, RaceTrack track, RaceQue que, String trackName){
 		que.validatePlayers();
@@ -116,10 +122,35 @@ public class RaceScheduler {
 				pl.setGameMode(GameMode.SURVIVAL);
 				
 			}
+		final ArrayList<Minecart> cars = new ArrayList<Minecart>();
 		race.setOldInventories(oldInv);
-		//TODO Teleport players to place on start grid & set metdaData on cars to be frozen
-		
-		
+		RaceTrack track = race.getTrack();
+		ArrayList<SerializableLocation> sgrid = track.getStartGrid();
+		HashMap<Integer, Location> grid = new HashMap<Integer, Location>();
+		for(int i=0;i<sgrid.size();i++){
+			SerializableLocation s = sgrid.get(i);
+			grid.put(i, s.getLocation(plugin.getServer()));
+		}
+		ArrayList<String> assigned = new ArrayList<String>();
+		assigned.addAll(players);
+		int count = players.size();
+		for(int i=0;i<count;i++){
+		int min = 0;
+		int max = assigned.size();
+		int randomNumber = random.nextInt(max - min) + min;
+		Player p = plugin.getServer().getPlayer(assigned.get(randomNumber));
+		Location loc = grid.get(i);
+		p.teleport(loc.add(0, 2, 0));
+		Minecart car = (Minecart) loc.getWorld().spawnEntity(loc, EntityType.MINECART);
+		car.setMetadata("car.frozen", new StatValue(null, main.plugin));
+		car.setPassenger(p);
+		cars.add(car);
+		}
+		if(!assigned.isEmpty()){
+			for(String name:assigned){
+				players.remove(name);
+			}
+		}
 		final Map<String, Location> locations = new HashMap<String, Location>();
 		for(String name:players){
 			locations.put(name, plugin.getServer().getPlayer(name).getLocation());
@@ -147,6 +178,9 @@ public class RaceScheduler {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 				}
+				}
+				for(Minecart car:cars){
+					car.removeMetadata("car.frozen", main.plugin);
 				}
 				for(String name:players){
 					Player p=plugin.getServer().getPlayer(name);
