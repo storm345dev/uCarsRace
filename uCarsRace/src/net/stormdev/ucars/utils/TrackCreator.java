@@ -80,7 +80,8 @@ public class TrackCreator {
 		return;
 	}
 	public void addCheckpoint(){
-		track.addToCheckpoints(player.getLocation());
+		int pos = track.getCheckpoints().size();
+		track.addToCheckpoints(pos, player.getLocation());
 		player.sendMessage(main.colors.getInfo()+"["+track.getCheckpoints().size()+"]");
 		return;
 	}

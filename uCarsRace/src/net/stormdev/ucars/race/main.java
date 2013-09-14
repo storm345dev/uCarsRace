@@ -142,7 +142,16 @@ public class main extends JavaPlugin {
         		lang.set("race.que.go", "Go!");
         	}
         	if(!lang.contains("race.end.won")){
-        		lang.set("race.end.won", " won the race!!");
+        		lang.set("race.end.won", " won the race!");
+        	}
+        	if(!lang.contains("race.mid.miss")){
+        		lang.set("race.mid.miss", "You missed a section of the track! Please go back and do it!");
+        	}
+        	if(!lang.contains("race.mid.backwards")){
+        		lang.set("race.mid.backwards", "You are going the wrong way!");
+        	}
+        	if(!lang.contains("race.mid.lap")){
+        		lang.set("race.mid.lap", "Lap [%lap%/%total%]");
         	}
         	//Setup the config
         	if (!config.contains("setup.create.wand")) {
@@ -150,6 +159,9 @@ public class main extends JavaPlugin {
 			}
         	if (!config.contains("general.logger.colour")) {
 				config.set("general.logger.colour", true);
+			}
+        	if (!config.contains("general.raceTickrate")) {
+				config.set("general.raceTickrare", 6l);
 			}
         	//Setup the colour scheme
         	if (!config.contains("colorScheme.success")) {

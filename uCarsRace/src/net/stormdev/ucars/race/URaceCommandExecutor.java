@@ -3,6 +3,7 @@ package net.stormdev.ucars.race;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+import net.stormdev.ucars.utils.RaceQue;
 import net.stormdev.ucars.utils.RaceTrack;
 import net.stormdev.ucars.utils.TrackCreator;
 
@@ -177,6 +178,28 @@ public class URaceCommandExecutor implements CommandExecutor {
 					}
 					sender.sendMessage(main.colors.getInfo()+Trackname);
 				}
+				return true;
+			}
+			else if(command.equalsIgnoreCase("join")){
+				if(player == null){
+					sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.playersOnly"));
+					return true;
+				}
+				if(args.length < 2){
+					return false;
+				}
+				String trackName = args[1];
+				RaceTrack track = plugin.trackManager.getRaceTrack(trackName);
+				if(track == null){
+					//TODO Tell them it doesnt exist
+				return true;	
+				}
+				RaceQue que = new RaceQue(track);
+				trackName = track.getTrackName();
+				if(main.plugin.ques.containsKey(trackName)){
+					que = main.plugin.ques.get(trackName);
+				}
+				main.plugin.gameScheduler.joinGame(player.getName(), track, que, trackName);
 				return true;
 			}
 			return false;

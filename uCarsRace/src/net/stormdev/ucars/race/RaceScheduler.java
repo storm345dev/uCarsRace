@@ -133,12 +133,17 @@ public class RaceScheduler {
 		}
 		ArrayList<String> assigned = new ArrayList<String>();
 		assigned.addAll(players);
-		int count = players.size();
+		int count = grid.size();
+		if(count > assigned.size()){
+			count = assigned.size();
+		}
 		for(int i=0;i<count;i++){
 		int min = 0;
 		int max = assigned.size();
+		if(!(max < 1)){
 		int randomNumber = random.nextInt(max - min) + min;
 		Player p = plugin.getServer().getPlayer(assigned.get(randomNumber));
+		assigned.remove(p);
 		Location loc = grid.get(i);
 		p.teleport(loc.add(0, 2, 0));
 		Minecart car = (Minecart) loc.getWorld().spawnEntity(loc, EntityType.MINECART);
@@ -146,10 +151,6 @@ public class RaceScheduler {
 		car.setPassenger(p);
 		cars.add(car);
 		}
-		if(!assigned.isEmpty()){
-			for(String name:assigned){
-				players.remove(name);
-			}
 		}
 		final Map<String, Location> locations = new HashMap<String, Location>();
 		for(String name:players){
@@ -169,10 +170,7 @@ public class RaceScheduler {
 				for(int i=10;i>0;i--){
 				for(String name:players){
 				Player p=plugin.getServer().getPlayer(name);
-				p.sendMessage(ChatColor.GOLD+""+i);
-				
-				p.teleport(locations.get(name));
-				
+				p.sendMessage(main.colors.getInfo()+""+i);
 				}
 				try {
 					Thread.sleep(1000);

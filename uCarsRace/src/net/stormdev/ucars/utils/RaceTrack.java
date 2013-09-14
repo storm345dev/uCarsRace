@@ -2,6 +2,8 @@ package net.stormdev.ucars.utils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.bukkit.Location;
 import org.bukkit.Server;
@@ -17,7 +19,7 @@ public class RaceTrack implements Serializable {
 	SerializableLocation line1 = null;
 	SerializableLocation line2 = null;
 	ArrayList<SerializableLocation> startGrid = new ArrayList<SerializableLocation>();
-	ArrayList<SerializableLocation> checkPoints = new ArrayList<SerializableLocation>();
+	Map<Integer, SerializableLocation> checkPoints = new HashMap<Integer, SerializableLocation>();
 	public RaceTrack(String trackname, int maxplayers, int minplayers, int laps){
 		this.trackname = trackname;
 		this.maxplayers = maxplayers;
@@ -97,21 +99,21 @@ public class RaceTrack implements Serializable {
 		this.startGrid.remove(loc);
 		calculateMaxMinPlayers();
 	}
-	public ArrayList<SerializableLocation> getCheckpoints(){
+	public Map<Integer, SerializableLocation> getCheckpoints(){
 		return this.checkPoints;
 	}
-	public void setCheckpoints(ArrayList<SerializableLocation> checkpoints){
+	public void setCheckpoints(Map<Integer, SerializableLocation> checkpoints){
 		this.checkPoints = checkpoints;
 		calculateMaxMinPlayers();
 		return;
 	}
-	public void addToCheckpoints(SerializableLocation loc){
-		this.checkPoints.add(loc);
+	public void addToCheckpoints(int num, SerializableLocation loc){
+		this.checkPoints.put(num, loc);
 		calculateMaxMinPlayers();
 	}
-	public void addToCheckpoints(Location loc){
+	public void addToCheckpoints(int num, Location loc){
 		SerializableLocation sloc = new SerializableLocation(loc);
-		this.checkPoints.add(sloc);
+		this.checkPoints.put(num, sloc);
 		calculateMaxMinPlayers();
 	}
 	public void RemoveFromCheckpoints(SerializableLocation loc){
