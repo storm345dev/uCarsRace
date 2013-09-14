@@ -113,6 +113,7 @@ public class main extends JavaPlugin {
 			logger.info("Unable to find uCars!");
 			getServer().getPluginManager().disablePlugin(this);
 		}
+		ucars.hookPlugin(this);
 		logger.info("uCars found and hooked!");
 		PluginDescriptionFile pldesc = plugin.getDescription();
 		Map<String, Map<String, Object>> commands = pldesc.getCommands();
@@ -134,6 +135,9 @@ public class main extends JavaPlugin {
 	}
 	
 	public void onDisable(){
+		if(ucars != null){
+			ucars.unHookPlugin(this);
+		}
 		logger.info("uCarsRace has been disabled!");
 	}
 	
