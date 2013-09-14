@@ -74,6 +74,9 @@ public class main extends JavaPlugin {
         	if(!lang.contains("general.cmd.playersOnly")){
         		lang.set("general.cmd.playersOnly", "This command is for players only!");
         	}
+        	if(!lang.contains("setup.create.exists")){
+        		lang.set("setup.create.exists", "This track already exists! Please do /urace delete %name% before proceeding!");
+        	}
         	if(!lang.contains("setup.create.start")){
         		lang.set("setup.create.start", "Wand: %id% (%name%)");
         	}

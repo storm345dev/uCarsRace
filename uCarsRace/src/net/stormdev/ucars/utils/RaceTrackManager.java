@@ -49,7 +49,7 @@ public class RaceTrackManager {
 		}
 	public RaceTrack getRaceTrack(String trackName){
 		for(RaceTrack track:tracks){
-			if(track.getTrackName().equals(trackName)){
+			if(track.getTrackName().equalsIgnoreCase(trackName)){
 				return track;
 			}
 		}
@@ -66,7 +66,7 @@ public class RaceTrackManager {
 		@SuppressWarnings("unchecked")
 		ArrayList<RaceTrack> Tracks = (ArrayList<RaceTrack>) tracks.clone();
 		for(RaceTrack tr:Tracks){
-			if(tr.getTrackName().equals(name)){
+			if(tr.getTrackName().equalsIgnoreCase(name)){
 				tracks.remove(tr);
 			}
 		}
@@ -77,11 +77,21 @@ public class RaceTrackManager {
 		@SuppressWarnings("unchecked")
 		ArrayList<RaceTrack> Tracks = (ArrayList<RaceTrack>) tracks.clone();
 		for(RaceTrack tr:Tracks){
-			if(tr.getTrackName().equals(name)){
+			if(tr.getTrackName().equalsIgnoreCase(name)){
 				tracks.remove(tr);
 			}
 		}
 		return;
+	}
+	public Boolean raceTrackExists(String name){
+		@SuppressWarnings("unchecked")
+		ArrayList<RaceTrack> Tracks = (ArrayList<RaceTrack>) tracks.clone();
+		for(RaceTrack tr:Tracks){
+			if(tr.getTrackName().equalsIgnoreCase(name)){
+				return true;
+			}
+		}
+		return false;
 	}
 	public void reloadTracks(){
 		this.save();

@@ -38,6 +38,12 @@ public class URaceCommandExecutor implements CommandExecutor {
 					return false;
 				}
 				String trackname = args[1];
+				if(plugin.trackManager.raceTrackExists(trackname)){
+					String msg = main.msgs.get("setup.create.exists");
+					msg = msg.replaceAll(Pattern.quote("%name%"), trackname);
+					sender.sendMessage(main.colors.getError()+msg);
+					return true;
+				}
 				int id = main.config.getInt("setup.create.wand");
 				ItemStack named = new ItemStack(id);
 				String start = main.msgs.get("setup.create.start");
