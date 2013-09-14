@@ -71,6 +71,9 @@ public class main extends JavaPlugin {
 		logger = new CustomLogger(getServer().getConsoleSender(), getLogger());
         try {
         	//Setup the Lang file
+        	if(!lang.contains("general.cmd.page")){
+        		lang.set("general.cmd.page", "Page [%page%/%total%]:");
+        	}
         	if(!lang.contains("general.cmd.playersOnly")){
         		lang.set("general.cmd.playersOnly", "This command is for players only!");
         	}

@@ -1,5 +1,6 @@
 package net.stormdev.ucars.race;
 
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import net.stormdev.ucars.utils.RaceTrack;
@@ -23,7 +24,7 @@ public class URaceCommandExecutor implements CommandExecutor {
 		if(sender instanceof Player){
 			player = (Player) sender;
 		}
-		if(cmd.getName().equalsIgnoreCase("urace")){
+		if(cmd.getName().equalsIgnoreCase("raceAdmin")){
 			if(args.length < 1){
 				return false;
 			}
@@ -52,6 +53,7 @@ public class URaceCommandExecutor implements CommandExecutor {
 			    sender.sendMessage(main.colors.getInfo()+start);
 			    RaceTrack track = new RaceTrack(trackname, 2, 2);
 			    new TrackCreator(player, track); //Create the track
+			    return true;
 			}
 			else if(command.equalsIgnoreCase("delete")){
 				if(args.length < 2){
@@ -65,10 +67,110 @@ public class URaceCommandExecutor implements CommandExecutor {
 				plugin.trackManager.deleteRaceTrack(trackname);
 				String msg = main.msgs.get("general.cmd.delete.success");
 				msg = msg.replaceAll("%name%", trackname);
+				sender.sendMessage(main.colors.getSuccess()+msg);
+				return true;
+			}
+			else if(command.equalsIgnoreCase("list")){
+				int page = 1;
+				if(args.length > 1){
+					try {
+						page = Integer.parseInt(args[1]);
+					} catch (NumberFormatException e) {
+						page = 1;
+					}
+				}
+				@SuppressWarnings("unchecked")
+				ArrayList<RaceTrack> tracks = (ArrayList<RaceTrack>) plugin.trackManager.getRaceTracks().clone();
+				ArrayList<String> names = new ArrayList<String>();
+				for(RaceTrack track:tracks){
+					names.add(track.getTrackName());
+				}
+				double total = names.size() / 6;
+				int totalpages = (int) Math.ceil(total);
+				int pos = (page-1) * 6;
+				if(page > totalpages){
+					page = totalpages;
+				}
+				if(pos > names.size()){
+					pos = names.size() - 5;
+				}
+				if(pos < 0){
+					pos = 0;
+				}
+				if(page < 0){
+					page = 0;
+				}
+				String msg = main.msgs.get("general.cmd.page");
+				msg = msg.replaceAll(Pattern.quote("%page%"), ""+(page+1));
+				msg = msg.replaceAll(Pattern.quote("%total%"), ""+(totalpages+1));
+				sender.sendMessage(main.colors.getTitle()+msg);
+				for(int i=pos;i<(i+6)&&i<names.size();i++){
+					String Trackname = names.get(i);
+					char[] chars = Trackname.toCharArray();
+					if(chars.length >= 1){
+						String s = ""+chars[0];
+						s = s.toUpperCase();
+						Trackname = s + Trackname.substring(1);
+					}
+					sender.sendMessage(main.colors.getInfo()+Trackname);
+				}
 				return true;
 			}
 			//TODO
-			return true;
+			return false;
+		}
+		else if(cmd.getName().equalsIgnoreCase("urace")){
+			if(args.length < 1){
+				return false;
+			}
+			String command = args[0];
+			if(command.equalsIgnoreCase("list")){
+				int page = 1;
+				if(args.length > 1){
+					try {
+						page = Integer.parseInt(args[1]);
+					} catch (NumberFormatException e) {
+						page = 1;
+					}
+				}
+				@SuppressWarnings("unchecked")
+				ArrayList<RaceTrack> tracks = (ArrayList<RaceTrack>) plugin.trackManager.getRaceTracks().clone();
+				ArrayList<String> names = new ArrayList<String>();
+				for(RaceTrack track:tracks){
+					names.add(track.getTrackName());
+				}
+				double total = names.size() / 6;
+				int totalpages = (int) Math.ceil(total);
+				int pos = (page-1) * 6;
+				if(page > totalpages){
+					page = totalpages;
+				}
+				if(pos > names.size()){
+					pos = names.size() - 5;
+				}
+				if(pos < 0){
+					pos = 0;
+				}
+				if(page < 0){
+					page = 0;
+				}
+				String msg = main.msgs.get("general.cmd.page");
+				msg = msg.replaceAll(Pattern.quote("%page%"), ""+(page+1));
+				msg = msg.replaceAll(Pattern.quote("%total%"), ""+(totalpages+1));
+				sender.sendMessage(main.colors.getTitle()+msg);
+				for(int i=pos;i<(i+6)&&i<names.size();i++){
+					String Trackname = names.get(i);
+					char[] chars = Trackname.toCharArray();
+					if(chars.length >= 1){
+						String s = ""+chars[0];
+						s = s.toUpperCase();
+						Trackname = s + Trackname.substring(1);
+					}
+					sender.sendMessage(main.colors.getInfo()+Trackname);
+				}
+				return true;
+			}
+			return false;
 		}
 		
 		return false;

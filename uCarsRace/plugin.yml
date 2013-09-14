@@ -4,9 +4,15 @@ version: 1
 softdepend: [Vault]
 depend: [uCars]
 commands:
-   urace:
+   raceAdmin:
         description: This is the setup of racetracks and admin commands
-        usage: /<command> [Create <TrackName>] [Delete <TrackName>]
+        usage: /<command> [Create <TrackName>] [Delete <TrackName>] [List (Page)]
         permission: ucarsrace.admin
         permission-message: You don't have access to this command
         default: op
+   urace:
+        description: This is the playing of race tracks
+        usage: /<command> [List (Page)]
+        permission: ucarsrace.race
+        permission-message: You don't have access to this command
+        default: true
