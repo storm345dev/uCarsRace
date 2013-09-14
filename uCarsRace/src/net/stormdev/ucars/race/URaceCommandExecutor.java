@@ -35,10 +35,19 @@ public class URaceCommandExecutor implements CommandExecutor {
 					sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.playersOnly"));
 					return true;
 				}
-				if(args.length < 2){
+				if(args.length < 3){
 					return false;
 				}
 				String trackname = args[1];
+				int laps = 3;
+				try {
+					laps = Integer.parseInt(args[2]);
+				} catch (NumberFormatException e) {
+					return false;
+				}
+				if(laps < 1){
+					laps = 1;
+				}
 				if(plugin.trackManager.raceTrackExists(trackname)){
 					String msg = main.msgs.get("setup.create.exists");
 					msg = msg.replaceAll(Pattern.quote("%name%"), trackname);
@@ -51,7 +60,7 @@ public class URaceCommandExecutor implements CommandExecutor {
 				start = start.replaceAll(Pattern.quote("%id%"), ""+id);
 				start = start.replaceAll(Pattern.quote("%name%"), named.getType().name().toLowerCase());
 			    sender.sendMessage(main.colors.getInfo()+start);
-			    RaceTrack track = new RaceTrack(trackname, 2, 2);
+			    RaceTrack track = new RaceTrack(trackname, 2, 2, laps);
 			    new TrackCreator(player, track); //Create the track
 			    return true;
 			}

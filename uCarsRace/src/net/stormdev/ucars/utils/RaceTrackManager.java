@@ -58,6 +58,13 @@ public class RaceTrackManager {
 	public ArrayList<RaceTrack> getRaceTracks(){
 		return tracks;
 	}
+	public ArrayList<String> getRaceTrackNames(){
+		ArrayList<String> names = new ArrayList<String>();
+		for(RaceTrack tr:tracks){
+			names.add(tr.getTrackName());
+		}
+		return names;
+	}
 	public void setRaceTrack(RaceTrack track){
 		tracks.add(track);
 		this.save();

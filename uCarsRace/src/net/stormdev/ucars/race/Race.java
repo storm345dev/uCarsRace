@@ -26,11 +26,14 @@ public class Race {
 	private String winner = "Unknown";
 	public Boolean running = false;
 	private BukkitTask task = null;
+	public int totalLaps = 3;
+	public Map<String, Integer> lapsLeft = new HashMap<String, Integer>();
 	public Map<String, ItemStack[]> oldInventories = new HashMap<String, ItemStack[]>();
 	public Race(RaceTrack track, String trackName){
 		this.gameId = UUID.randomUUID().toString();
 		this.track = track;
 		this.trackName = trackName;
+		this.totalLaps = this.track.getLaps();
 	}
 	public void setOldInventories(Map<String, ItemStack[]> inventories){
 		this.oldInventories = inventories;

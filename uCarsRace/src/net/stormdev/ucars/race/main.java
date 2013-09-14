@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import net.stormdev.ucars.utils.Ques;
+import net.stormdev.ucars.utils.RaceMethods;
 import net.stormdev.ucars.utils.RaceQue;
 import net.stormdev.ucars.utils.RaceTrackManager;
 import net.stormdev.ucars.utils.TrackCreator;
@@ -35,10 +36,12 @@ public class main extends JavaPlugin {
 	public static URaceCommandExecutor cmdExecutor = null;
 	public static URaceListener listener = null;
 	public RaceTrackManager trackManager = null;
+	public RaceScheduler gameScheduler = null;
 	public static HashMap<String, TrackCreator> trackCreators = new HashMap<String, TrackCreator>();
 	public HashMap<String, RaceQue> ques = new HashMap<String, RaceQue>();
 	public Ques raceQues = null;
 	public static Lang msgs = null;
+	public RaceMethods raceMethods = null;
 	public void onEnable(){
 		plugin = this;
 		File langFile = new File(getDataFolder().getAbsolutePath()
@@ -138,6 +141,9 @@ public class main extends JavaPlugin {
         	if(!lang.contains("race.que.go")){
         		lang.set("race.que.go", "Go!");
         	}
+        	if(!lang.contains("race.end.won")){
+        		lang.set("race.end.won", " won the race!!");
+        	}
         	//Setup the config
         	if (!config.contains("setup.create.wand")) {
 				config.set("setup.create.wand", 280);
@@ -209,6 +215,8 @@ public class main extends JavaPlugin {
 				this);
 		this.trackManager = new RaceTrackManager(this, new File(getDataFolder()+File.separator+"Data"+File.separator+"tracks.uracetracks"));
 		this.raceQues = new Ques(this);
+		this.raceMethods = new RaceMethods();
+		this.gameScheduler = new RaceScheduler();
 		logger.info("uCarsRace v"+plugin.getDescription().getVersion()+" has been enabled!");
 	}
 	

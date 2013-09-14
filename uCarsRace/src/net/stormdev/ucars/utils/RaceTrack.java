@@ -11,16 +11,21 @@ public class RaceTrack implements Serializable {
 	String trackname = "Unknown";
 	int maxplayers = 10;
 	int minplayers = 2;
+	int laps = 3;
 	SerializableLocation lobby = null;
 	SerializableLocation exit = null;
 	SerializableLocation line1 = null;
 	SerializableLocation line2 = null;
 	ArrayList<SerializableLocation> startGrid = new ArrayList<SerializableLocation>();
 	ArrayList<SerializableLocation> checkPoints = new ArrayList<SerializableLocation>();
-	public RaceTrack(String trackname, int maxplayers, int minplayers){
+	public RaceTrack(String trackname, int maxplayers, int minplayers, int laps){
 		this.trackname = trackname;
 		this.maxplayers = maxplayers;
 		this.minplayers = minplayers;
+		this.laps = laps;
+	}
+	public int getLaps(){
+		return laps;
 	}
 	public void setLine1(Location loc){
 		SerializableLocation sloc = new SerializableLocation(loc);
