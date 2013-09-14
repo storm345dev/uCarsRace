@@ -117,6 +117,27 @@ public class main extends JavaPlugin {
         	if(!lang.contains("setup.create.done")){
         		lang.set("setup.create.done", "Successfully created Race Track %name%!");
         	}
+        	if(!lang.contains("race.que.full")){
+        		lang.set("race.que.full", "Race que full!");
+        	}
+        	if(!lang.contains("race.que.success")){
+        		lang.set("race.que.success", "In Race Que!");
+        	}
+        	if(!lang.contains("race.que.joined")){
+        		lang.set("race.que.joined", " joined the race que!");
+        	}
+        	if(!lang.contains("race.que.left")){
+        		lang.set("race.que.left", " left the race que!");
+        	}
+        	if(!lang.contains("race.que.preparing")){
+        		lang.set("race.que.preparing", "Preparing race...");
+        	}
+        	if(!lang.contains("race.que.starting")){
+        		lang.set("race.que.starting", "Race starting in...");
+        	}
+        	if(!lang.contains("race.que.go")){
+        		lang.set("race.que.go", "Go!");
+        	}
         	//Setup the config
         	if (!config.contains("setup.create.wand")) {
 				config.set("setup.create.wand", 280);

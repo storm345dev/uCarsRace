@@ -48,22 +48,22 @@ public class RaceScheduler {
 						arenaque.remove(name);
 						for(String ppname:arenaque){
 							if(plugin.getServer().getPlayer(ppname).isOnline() && plugin.getServer().getPlayer(ppname) != null){
-								plugin.getServer().getPlayer(ppname).sendMessage(ChatColor.RED+"["+trackName+":] "+ChatColor.GOLD+playername+" left the race que!");
+								plugin.getServer().getPlayer(ppname).sendMessage(ChatColor.RED+"["+trackName+":] "+main.colors.getInfo()+playername+main.msgs.get("race.que.left"));
 							}
 						}
 					}
 					else{
-						plugin.getServer().getPlayer(name).sendMessage(ChatColor.RED+"["+trackName+":] "+ChatColor.GOLD+playername+" joined the race que!");
+						plugin.getServer().getPlayer(name).sendMessage(ChatColor.RED+"["+trackName+":] "+main.colors.getInfo()+playername+main.msgs.get("race.que.joined"));
 					}
 				}
 				plugin.raceQues.setQue(trackName, que);
 				this.reCalculateQues();
-				plugin.getServer().getPlayer(playername).sendMessage(ChatColor.GREEN+"In arena que!");
+				plugin.getServer().getPlayer(playername).sendMessage(main.colors.getSuccess()+main.msgs.get("race.que.success"));
 				return true;
 			}
 		}
 		if(plugin.getServer().getPlayer(playername).isOnline()){
-			plugin.getServer().getPlayer(playername).sendMessage(ChatColor.RED+"Race que full!");
+			plugin.getServer().getPlayer(playername).sendMessage(main.colors.getError()+main.msgs.get("race.que.full"));
 		}
 		return false;
 	}
@@ -154,7 +154,7 @@ public class RaceScheduler {
 		final Map<String, Location> locations = new HashMap<String, Location>();
 		for(String name:players){
 			locations.put(name, plugin.getServer().getPlayer(name).getLocation());
-			plugin.getServer().getPlayer(name).sendMessage(ChatColor.GOLD+"Preparing race...");
+			plugin.getServer().getPlayer(name).sendMessage(main.colors.getInfo()+main.msgs.get("race.que.preparing"));
 		}
 		List<String> gameIn = new ArrayList<String>();
 		gameIn.addAll(race.getPlayers());
@@ -164,7 +164,7 @@ public class RaceScheduler {
 			public void run() {
 				for(String name:players){
 					Player p=plugin.getServer().getPlayer(name);
-					p.sendMessage(ChatColor.GOLD+"Race beginning in...");
+					p.sendMessage(main.colors.getInfo()+main.msgs.get("race.que.starting"));
 				}
 				for(int i=10;i>0;i--){
 				for(String name:players){
@@ -184,7 +184,7 @@ public class RaceScheduler {
 				}
 				for(String name:players){
 					Player p=plugin.getServer().getPlayer(name);
-					p.sendMessage(ChatColor.GOLD+"Go!");
+					p.sendMessage(main.colors.getInfo()+main.msgs.get("race.que.go"));
 					}
 				race.start();
 				return;
@@ -210,7 +210,7 @@ public class RaceScheduler {
 		}
 		for(String ppname:getQue(arena)){
 			if(plugin.getServer().getPlayer(ppname).isOnline() && plugin.getServer().getPlayer(ppname) != null){
-				plugin.getServer().getPlayer(ppname).sendMessage(ChatColor.RED+"["+arenaName+":] "+ChatColor.GOLD+playername+" left the game que!");
+				plugin.getServer().getPlayer(ppname).sendMessage(ChatColor.RED+"["+arenaName+":] "+main.colors.getInfo()+playername+main.msgs.get("race.que.left"));
 			}
 		}
 		reCalculateQues();
