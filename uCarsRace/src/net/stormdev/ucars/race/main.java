@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
+import net.stormdev.ucars.utils.Ques;
+import net.stormdev.ucars.utils.RaceQue;
 import net.stormdev.ucars.utils.RaceTrackManager;
 import net.stormdev.ucars.utils.TrackCreator;
 
@@ -34,6 +36,8 @@ public class main extends JavaPlugin {
 	public static URaceListener listener = null;
 	public RaceTrackManager trackManager = null;
 	public static HashMap<String, TrackCreator> trackCreators = new HashMap<String, TrackCreator>();
+	public HashMap<String, RaceQue> ques = new HashMap<String, RaceQue>();
+	public Ques raceQues = null;
 	public static Lang msgs = null;
 	public void onEnable(){
 		plugin = this;
@@ -183,6 +187,7 @@ public class main extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(main.listener,
 				this);
 		this.trackManager = new RaceTrackManager(this, new File(getDataFolder()+File.separator+"Data"+File.separator+"tracks.uracetracks"));
+		this.raceQues = new Ques(this);
 		logger.info("uCarsRace v"+plugin.getDescription().getVersion()+" has been enabled!");
 	}
 	
