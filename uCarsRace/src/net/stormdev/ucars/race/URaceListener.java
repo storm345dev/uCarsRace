@@ -177,7 +177,6 @@ public class URaceListener implements Listener {
 			}
 			else{
 			Location playerLoc = player.getLocation();
-			CheckpointCheck check = game.playerAtCheckpoint(player, plugin.getServer());
 			Boolean checkNewLap = false;
 			int old = 0;
 			try {
@@ -188,6 +187,15 @@ public class URaceListener implements Listener {
 			if(old == game.getMaxCheckpoints()){
 				checkNewLap = true;
 			}
+			Integer[] toCheck = new Integer[]{};
+			if(checkNewLap){
+				toCheck = new Integer[]{0, old, (old-1)};
+			}
+			else{
+				toCheck = new Integer[]{(old+1),(old-1)};
+			}
+			CheckpointCheck check = game.playerAtCheckpoint(toCheck, player, plugin.getServer());
+			
 			if(check.at){ //At a checkpoint
 				int ch = check.checkpoint;
 				if(ch >=game.getMaxCheckpoints()){

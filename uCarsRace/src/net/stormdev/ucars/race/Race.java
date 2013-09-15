@@ -139,21 +139,23 @@ public class Race {
     	}
     	main.plugin.getServer().getPluginManager().callEvent(new RaceFinishEvent(this));
     }
-    public CheckpointCheck playerAtCheckpoint(Player p, Server server){
+    public CheckpointCheck playerAtCheckpoint(Integer[] checks, Player p, Server server){
     	int checkpoint = 0;
     	Boolean at = false;
     	Map<Integer, SerializableLocation> schecks = this.track.getCheckpoints();
     	Location pl = p.getLocation();
-    	for(Integer key: schecks.keySet()){
-    		SerializableLocation sloc = schecks.get(key);
-    		Location check = sloc.getLocation(server);
-    		if((check.getX()-10)<pl.getX() && (check.getX()+10) > pl.getX()){
-    			if((check.getZ()-10)<pl.getZ() && (check.getZ()+10) > pl.getZ()){
-        			if((check.getY()-5)<pl.getY() && (check.getY()+5) > pl.getY()){
-        				at = true;
-            			checkpoint = key;
-            			return new CheckpointCheck(at, checkpoint);
-        			}
+    	for(Integer key: checks){
+    		if(schecks.containsKey(key)){
+    			SerializableLocation sloc = schecks.get(key);
+    			Location check = sloc.getLocation(server);
+        		if((check.getX()-10)<pl.getX() && (check.getX()+10) > pl.getX()){
+        			if((check.getZ()-10)<pl.getZ() && (check.getZ()+10) > pl.getZ()){
+            			if((check.getY()-5)<pl.getY() && (check.getY()+5) > pl.getY()){
+            				at = true;
+                			checkpoint = key;
+                			return new CheckpointCheck(at, checkpoint);
+            			}
+            		}
         		}
     		}
     	}
