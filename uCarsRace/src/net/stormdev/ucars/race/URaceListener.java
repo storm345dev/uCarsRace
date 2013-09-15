@@ -192,7 +192,7 @@ public class URaceListener implements Listener {
 				toCheck = new Integer[]{0,(old-1)};
 			}
 			else{
-				toCheck = new Integer[]{(old+1),(old-1)};
+				toCheck = new Integer[]{(old+1),(old+2),(old-1)};
 			}
 			CheckpointCheck check = game.playerAtCheckpoint(toCheck, player, plugin.getServer());
 			

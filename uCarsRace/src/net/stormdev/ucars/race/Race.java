@@ -30,6 +30,7 @@ public class Race {
 	private String winner = "Unknown";
 	public Boolean running = false;
 	private BukkitTask task = null;
+	public int maxCheckpoints = 3;
 	public int totalLaps = 3;
 	public Map<String, Integer> checkpoints = new HashMap<String, Integer>();
 	public Map<String, Integer> lapsLeft = new HashMap<String, Integer>();
@@ -39,6 +40,7 @@ public class Race {
 		this.track = track;
 		this.trackName = trackName;
 		this.totalLaps = this.track.getLaps();
+		this.maxCheckpoints = this.track.getCheckpoints().size()-1;
 	}
 	public void setOldInventories(Map<String, ItemStack[]> inventories){
 		this.oldInventories = inventories;
@@ -162,7 +164,7 @@ public class Race {
     	return new CheckpointCheck(at, checkpoint);
     }
     public int getMaxCheckpoints(){
-    	return this.track.getCheckpoints().size()-1; //Starts at 0
+    	return maxCheckpoints; //Starts at 0
     }
     public Boolean atLine(Server server, Location loc){
     	Location line1 = this.track.getLine1(server);
