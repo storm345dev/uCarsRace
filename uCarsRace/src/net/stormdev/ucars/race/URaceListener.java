@@ -11,10 +11,11 @@ import net.stormdev.ucars.utils.RaceStartEvent;
 import net.stormdev.ucars.utils.RaceUpdateEvent;
 import net.stormdev.ucars.utils.TrackCreator;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -23,6 +24,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
+
+import com.useful.ucars.ucars;
+import com.useful.ucarsCommon.StatValue;
 
 public class URaceListener implements Listener {
 	main plugin = null;
@@ -137,6 +142,24 @@ public class URaceListener implements Listener {
 			return;
 	    }
 	}
+	@EventHandler
+	void stayInCar(VehicleExitEvent event){
+		if(!(event.getVehicle() instanceof Minecart)){
+			return;
+		}
+		Minecart car = (Minecart) event.getVehicle();
+		if(!(event.getExited() instanceof Player)){
+			return;
+		}
+		Player player = (Player) event.getExited();
+		if(!(player.hasMetadata("car.stayIn"))){
+			return;
+		}
+		if(!ucars.listener.isACar(car)){
+			return;
+		}
+		event.setCancelled(true);
+	}
 	@EventHandler (priority = EventPriority.HIGHEST)
 	void RaceStart(RaceStartEvent event){
 		Race game = event.getRace();
@@ -155,7 +178,7 @@ public class URaceListener implements Listener {
 					game.checkpoints.put(pname, 0);
 				}
 				String msg = main.msgs.get("race.mid.lap");
-				msg = msg.replaceAll(Pattern.quote("%lap%"), ""+game.totalLaps);
+				msg = msg.replaceAll(Pattern.quote("%lap%"), ""+1);
 				msg = msg.replaceAll(Pattern.quote("%total%"), ""+game.totalLaps);
 			    plugin.getServer().getPlayer(pname).sendMessage(main.colors.getInfo()+msg);
 			}
@@ -192,7 +215,7 @@ public class URaceListener implements Listener {
 				toCheck = new Integer[]{0,(old-1)};
 			}
 			else{
-				toCheck = new Integer[]{(old+1),(old+2),(old-1)};
+				toCheck = new Integer[]{(old+1),(old-1)};
 			}
 			CheckpointCheck check = game.playerAtCheckpoint(toCheck, player, plugin.getServer());
 			
@@ -202,11 +225,13 @@ public class URaceListener implements Listener {
 					checkNewLap = true;
 				}
 				if(!(ch == old)){
+				/* Removed to reduce server load - Requires all checkpoints to be checked
 				if(ch-2 > old){
 					//They missed a checkpoint
 					player.sendMessage(main.colors.getError()+main.msgs.get("race.mid.miss"));
 					return;
 				}
+				*/
 				if(!(old==0) && !(old==game.getMaxCheckpoints()) && !(ch==0) &&!(ch==game.getMaxCheckpoints())){
 				if(old-2 > ch){
 					//They are going the wrong way!
@@ -240,13 +265,15 @@ public class URaceListener implements Listener {
 						lapsLeft = left;
 						if(left != 0){
 							String msg = main.msgs.get("race.mid.lap");
-							msg = msg.replaceAll(Pattern.quote("%lap%"), ""+lapsLeft);
+							int lap = game.totalLaps - lapsLeft+1;
+							msg = msg.replaceAll(Pattern.quote("%lap%"), ""+lap);
 							msg = msg.replaceAll(Pattern.quote("%total%"), ""+game.totalLaps);
 						    player.sendMessage(main.colors.getInfo()+msg);
 						}
 					}
 					if(lapsLeft < 1){
 					player.sendMessage("[DEBUG]Finished Race");
+					player.removeMetadata("car.stayIn", plugin);
 					}
 				}
 			  }

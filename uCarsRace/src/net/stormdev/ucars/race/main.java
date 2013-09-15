@@ -164,7 +164,7 @@ public class main extends JavaPlugin {
 				config.set("general.logger.colour", true);
 			}
         	if (!config.contains("general.raceTickrate")) {
-				config.set("general.raceTickrate", 10l);
+				config.set("general.raceTickrate", 6l);
 			}
         	//Setup the colour scheme
         	if (!config.contains("colorScheme.success")) {

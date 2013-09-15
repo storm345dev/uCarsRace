@@ -147,10 +147,14 @@ public class RaceScheduler {
 		Player p = plugin.getServer().getPlayer(assigned.get(randomNumber));
 		assigned.remove(p);
 		Location loc = grid.get(i);
+		if(p.getVehicle()!=null){
+			p.getVehicle().eject();
+		}
 		p.teleport(loc.add(0, 2, 0));
-		Minecart car = (Minecart) loc.getWorld().spawnEntity(loc, EntityType.MINECART);
+		Minecart car = (Minecart) loc.getWorld().spawnEntity(loc.add(0, 0.2, 0), EntityType.MINECART);
 		car.setMetadata("car.frozen", new StatValue(null, main.plugin));
 		car.setPassenger(p);
+		p.setMetadata("car.stayIn", new StatValue(null, plugin));
 		cars.add(car);
 		}
 		}
