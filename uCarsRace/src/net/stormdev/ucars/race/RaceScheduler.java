@@ -200,7 +200,7 @@ public class RaceScheduler {
 		this.games.put(game.getGameId(), game);
 		return;
 	}
-	public void stopGame(RaceTrack track, String gameId){
+	public void stopGame(RaceTrack track, String gameId) throws Exception{
 		if(!trackInUse(track.getTrackName())){
 			return;
 		}
@@ -238,6 +238,10 @@ public class RaceScheduler {
     	for(String key:keys){
     		Race game = this.games.get(key);
     		if(game.getTrackName().equalsIgnoreCase(trackName)){
+    			for(String p:game.getPlayers()){
+    				Player pl = plugin.getServer().getPlayer(p);
+    				pl.removeMetadata("car.stayIn", plugin);
+    			}
     			this.games.remove(game.getGameId());
     		}
     	}

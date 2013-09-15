@@ -156,6 +156,12 @@ public class main extends JavaPlugin {
         	if(!lang.contains("race.mid.lap")){
         		lang.set("race.mid.lap", "Lap [%lap%/%total%]");
         	}
+        	if(!lang.contains("race.end.soon")){
+        		lang.set("race.end.soon", "You have 1 minute before the race ends!");
+        	}
+        	if(!lang.contains("race.end.position")){
+        		lang.set("race.end.position", "You finished in place %position%!");
+        	}
         	//Setup the config
         	if (!config.contains("setup.create.wand")) {
 				config.set("setup.create.wand", 280);
@@ -241,7 +247,10 @@ public class main extends JavaPlugin {
 		}
 		HashMap<String, Race> games = this.gameScheduler.getGames();
 		for(Race r:games.values()){
-			this.gameScheduler.stopGame(r.getTrack(), r.getGameId());
+			try {
+				this.gameScheduler.stopGame(r.getTrack(), r.getGameId());
+			} catch (Exception e) {
+			}
 		}
 		logger.info("uCarsRace has been disabled!");
 	}

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.stormdev.ucars.utils.CheckpointCheck;
+import net.stormdev.ucars.utils.RaceEndEvent;
 import net.stormdev.ucars.utils.RaceFinishEvent;
 import net.stormdev.ucars.utils.RaceStartEvent;
 import net.stormdev.ucars.utils.RaceTrack;
@@ -32,6 +33,9 @@ public class Race {
 	private BukkitTask task = null;
 	public int maxCheckpoints = 3;
 	public int totalLaps = 3;
+	public ArrayList<String> finished = new ArrayList<String>();
+	public int finishCountdown = 60;
+	Boolean ending = false;
 	public Map<String, Integer> checkpoints = new HashMap<String, Integer>();
 	public Map<String, Integer> lapsLeft = new HashMap<String, Integer>();
 	public Map<String, ItemStack[]> oldInventories = new HashMap<String, ItemStack[]>();
@@ -77,6 +81,7 @@ public class Race {
 		}
 		if(this.getOldInventories().containsKey(playername)){
 			if(player != null){
+    				player.removeMetadata("car.stayIn", main.plugin);
 		player.getInventory().setContents(this.getOldInventories().get(playername));
 			}
 		this.getOldInventories().remove(playername);
@@ -116,6 +121,23 @@ public class Race {
     	this.winner = winner;
     	return;
     }
+    public void startEndCount(){
+    	final int count = this.finishCountdown;
+    	final Race race = this;
+    	main.plugin.getServer().getScheduler().runTaskAsynchronously(main.plugin, new Runnable(){
+
+			public void run() {
+				int z = count;
+				while(z>0){
+					z--;
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+					}
+				}
+				race.end();
+			}});
+    }
     public String getWinner(){
     	return this.winner;
     }
@@ -139,7 +161,19 @@ public class Race {
     	if(task != null){
     		task.cancel();
     	}
-    	main.plugin.getServer().getPluginManager().callEvent(new RaceFinishEvent(this));
+    	for(String playername:this.players){
+    		main.plugin.getServer().getPluginManager().callEvent(new RaceFinishEvent(this, playername));
+    	}
+    	RaceEndEvent evt = new RaceEndEvent(this);
+    	main.plugin.getServer().getPluginManager().callEvent(evt);
+    }
+    public void finish(String playername){
+    	if(!ending){
+    		ending = true;
+    		startEndCount();
+    	}
+    	this.finished.add(playername);
+    	main.plugin.getServer().getPluginManager().callEvent(new RaceFinishEvent(this, playername));
     }
     public CheckpointCheck playerAtCheckpoint(Integer[] checks, Player p, Server server){
     	int checkpoint = 0;

@@ -1,22 +1,29 @@
 package net.stormdev.ucars.race;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import net.stormdev.ucars.utils.CheckpointCheck;
+import net.stormdev.ucars.utils.RaceEndEvent;
 import net.stormdev.ucars.utils.RaceFinishEvent;
 import net.stormdev.ucars.utils.RaceQue;
 import net.stormdev.ucars.utils.RaceStartEvent;
 import net.stormdev.ucars.utils.RaceUpdateEvent;
 import net.stormdev.ucars.utils.TrackCreator;
+import net.stormdev.ucars.utils.ValueComparator;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -27,7 +34,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 
 import com.useful.ucars.ucars;
-import com.useful.ucarsCommon.StatValue;
 
 public class URaceListener implements Listener {
 	main plugin = null;
@@ -52,14 +58,19 @@ public class URaceListener implements Listener {
 		creator.set(wand);
 		return;
 	}
+	@EventHandler (priority = EventPriority.HIGHEST)
+	void RaceEnd(RaceEndEvent event){
+		Race game = event.getRace();
+		if(plugin.gameScheduler.trackInUse(game.getTrackName())){
+			plugin.gameScheduler.removeRace(game.getTrackName());
+		}
+		plugin.gameScheduler.reCalculateQues();
+	}
 	
 	//Much extranious PORTED code from here on (Races)
 	@EventHandler (priority = EventPriority.HIGHEST)
 	void RaceEnd(RaceFinishEvent event){
 		Race game = event.getRace();
-		if(plugin.gameScheduler.trackInUse(game.getTrackName())){
-			plugin.gameScheduler.removeRace(game.getTrackName());
-		}
 		List<String> players = new ArrayList<String>();
 		players.addAll(game.getPlayers());
 		List<String> inplayers = game.getInPlayers();
@@ -67,10 +78,18 @@ public class URaceListener implements Listener {
 		for(String inp:inplayers){
 			in = in+", "+inp; 
 		}
-		for(String playername:players){
+		Map<String,Integer> scores = new HashMap<String,Integer>();
+		Boolean finished = false;
+		String playername = event.getPlayername();
 				Player player = plugin.getServer().getPlayer(playername);
+				player.removeMetadata("car.stayIn", plugin);
 				player.setCustomName(ChatColor.stripColor(player.getCustomName()));
 				player.setCustomNameVisible(false);
+				if(player.getVehicle()!=null){
+					Vehicle veh = (Vehicle) player.getVehicle();
+					veh.eject();
+					veh.remove();
+				}
 				Location loc = game.getTrack().getExit(plugin.getServer());
 				if(loc == null){
 				player.teleport(player.getLocation().getWorld().getSpawnLocation());
@@ -79,7 +98,6 @@ public class URaceListener implements Listener {
 					player.teleport(loc);
 				}
 					player.getInventory().clear();
-					player.setHealth(0);
 					List<String> inners = new ArrayList<String>();
 					inners.addAll(inplayers);
 					for(String tplayername:inners){
@@ -96,12 +114,60 @@ public class URaceListener implements Listener {
 					}
 					player.sendMessage(main.colors.getInfo()+game.getWinner()+main.msgs.get("race.end.won"));
 				}
+				if(game.finished.contains(playername)){
+					finished = true;
+				}
+				else{
+				int laps = game.totalLaps - game.lapsLeft.get(playername) +1;
+				int checkpoints;
+				try {
+					checkpoints = game.checkpoints.get(playername);
+				} catch (Exception e) {
+					checkpoints = 0;
+				}
+				int score = (laps*game.getMaxCheckpoints()) + checkpoints;
+				if(game.getWinner().equals(playername)){
+					score = score+1;
+				}
+				scores.put(playername, score);
+				}
 				player.getInventory().clear();
 				if(game.getOldInventories().containsKey(player.getName())){
 				player.getInventory().setContents(game.getOldInventories().get(player.getName()));
 				}
+		if(!finished){
+		ValueComparator com = new ValueComparator(scores);
+    	SortedMap<String, Integer> sorted = new TreeMap<String, Integer>(com);
+		sorted.putAll(scores);
+    	Set<String> keys = sorted.keySet();
+		Object[] pls = (Object[]) keys.toArray();
+    	for(int i=0;i<pls.length;i++){
+			Player p = plugin.getServer().getPlayer((String) pls[i]);
+			if(p.getName().equals(event.getPlayername())){
+			if(p!=null){
+				String msg = main.msgs.get("race.end.position");
+				msg = msg.replaceAll("%position%", ""+(i+1));
+				p.sendMessage(main.colors.getSuccess()+msg);
+			}
+			}
+    	}
 		}
-		plugin.gameScheduler.reCalculateQues();
+		else{
+			Player p = plugin.getServer().getPlayer((String) event.getPlayername());
+			if(p!=null){
+			int position = 1;
+			ArrayList<String> fs = new ArrayList<String>();
+			fs.addAll(game.finished);
+			for(int i=0;i<fs.size();i++){
+				if(fs.get(i).equals(event.getPlayername())){
+					position = i+1;
+				}
+			}
+			String msg = main.msgs.get("race.end.position");
+			msg = msg.replaceAll("%position%", ""+position);
+			p.sendMessage(main.colors.getSuccess()+msg);
+			}
+		}
 		return;
 	}
 	@EventHandler
@@ -189,11 +255,16 @@ public class URaceListener implements Listener {
 	void RaceHandler(RaceUpdateEvent event){
 		Race game = event.getRace();
 		if(!game.getRunning()){
-			plugin.gameScheduler.stopGame(game.getTrack(), game.getTrackName());
+			try {
+				plugin.gameScheduler.stopGame(game.getTrack(), game.getTrackName());
+			} catch (Exception e) {
+			}
 			plugin.gameScheduler.reCalculateQues();
 			return;
 		}
-		for(String playername:game.getInPlayers()){
+		ArrayList<String> pls = new ArrayList<String>();
+		pls.addAll(game.getInPlayers());
+		for(String playername:pls){
 			Player player = plugin.getServer().getPlayer(playername);
 			if(player == null){
 				game.leave(playername);
@@ -253,8 +324,6 @@ public class URaceListener implements Listener {
 			}
 			if(lapsLeft < 1 || checkNewLap){
 				if(game.atLine(plugin.getServer(), playerLoc)){
-					//They finish
-					//TODO
 					if(checkNewLap){
 						int left = game.lapsLeft.get(playername)-1;
 						if(left < 0){
@@ -272,8 +341,17 @@ public class URaceListener implements Listener {
 						}
 					}
 					if(lapsLeft < 1){
-					player.sendMessage("[DEBUG]Finished Race");
-					player.removeMetadata("car.stayIn", plugin);
+					game.setWinner(playername);
+					game.finish(playername);
+					ArrayList<String> plz = new ArrayList<String>();
+					plz.addAll(game.getPlayers());
+					for(String pname:plz){
+						if(!(plugin.getServer().getPlayer(pname) == null)){
+							String msg = main.msgs.get("race.end.soon");
+							msg = msg.replaceAll("%name%", playername);
+							plugin.getServer().getPlayer(pname).sendMessage(main.colors.getInfo()+msg);
+						}
+					}
 					}
 				}
 			  }

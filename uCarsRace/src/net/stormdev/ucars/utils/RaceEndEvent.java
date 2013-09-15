@@ -5,19 +5,14 @@ import net.stormdev.ucars.race.Race;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class RaceFinishEvent extends Event {
+public class RaceEndEvent extends Event {
 	private static final HandlerList handlers = new HandlerList();
 	private Race race = null;
-	public String playername = "";
-	public RaceFinishEvent(Race race, String playername){
+	public RaceEndEvent(Race race){
 		this.race = race;
-		this.playername = playername;
 	}
 	public Race getRace(){
 		return this.race;
-	}
-	public String getPlayername(){
-		return this.playername;
 	}
 	public HandlerList getHandlers() {
 		return handlers;
