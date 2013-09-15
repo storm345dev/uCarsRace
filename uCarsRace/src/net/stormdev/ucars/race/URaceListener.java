@@ -189,7 +189,7 @@ public class URaceListener implements Listener {
 			}
 			Integer[] toCheck = new Integer[]{};
 			if(checkNewLap){
-				toCheck = new Integer[]{0, old, (old-1)};
+				toCheck = new Integer[]{0,(old-1)};
 			}
 			else{
 				toCheck = new Integer[]{(old+1),(old-1)};
