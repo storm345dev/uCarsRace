@@ -1,12 +1,15 @@
 package net.stormdev.ucars.race;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.regex.Pattern;
 
 import net.stormdev.ucars.utils.RaceQue;
 import net.stormdev.ucars.utils.RaceTrack;
 import net.stormdev.ucars.utils.TrackCreator;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -15,8 +18,10 @@ import org.bukkit.inventory.ItemStack;
 
 public class URaceCommandExecutor implements CommandExecutor {
 	main plugin = null;
+	Random random = null;
 	public URaceCommandExecutor(main plugin){
 		this.plugin = plugin;
+		random = new Random();
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String alias,
@@ -185,10 +190,72 @@ public class URaceCommandExecutor implements CommandExecutor {
 					sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.playersOnly"));
 					return true;
 				}
+				String trackName = null;
 				if(args.length < 2){
-					return false;
+					trackName = "auto";
 				}
-				String trackName = args[1];
+				trackName = args[1];
+				if(trackName.equalsIgnoreCase("auto")){
+						List<String> gameArenas = new ArrayList<String>();
+						List<String> order = new ArrayList<String>();
+						int waitingPlayers = 0;
+						for(String aname:plugin.raceQues.getQues()){
+							RaceQue arena = plugin.raceQues.getQue(aname);
+							if(arena.getHowManyPlayers() < arena.getPlayerLimit() && !arena.getTransitioning()){
+								gameArenas.add(aname);
+								if(arena.getHowManyPlayers() > waitingPlayers){
+									waitingPlayers = arena.getHowManyPlayers();
+								}
+							}
+						}
+						int waitNo = 1;
+						List<String> remaining = new ArrayList<String>();
+						remaining.addAll(gameArenas);
+						for(int i=waitNo;i<=waitingPlayers;i++){
+							for(String aname:gameArenas){
+								RaceQue arena = plugin.raceQues.getQue(aname);
+								if(arena.getHowManyPlayers() == waitNo){
+									order.add(aname);
+									if(remaining.contains(aname)){
+									remaining.remove(aname);
+									}
+								}
+							}
+						}
+						for(String aname:remaining){
+							order.add(aname);
+						}
+						if(order.size() < 1){
+							//Create a random raceQue
+							int min =  0;
+							int max = main.plugin.trackManager.getRaceTracks().size()-1;
+							if(main.plugin.trackManager.getRaceTracks().size() < 1){
+								//No tracks created
+								sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.full"));
+								return true;
+							}
+							int randomNumber = random.nextInt(max - min) + min;
+							RaceTrack track = main.plugin.trackManager.getRaceTracks().get(randomNumber);
+							RaceQue que = new RaceQue(track);
+							plugin.gameScheduler.joinGame(player.getName(), track, que, track.getTrackName());
+							return true;
+						}
+						String name = order.get(0);
+						RaceQue arena = plugin.raceQues.getQue(name);
+						if(arena.getHowManyPlayers() < 1){
+							int rand = 0 + (int)(Math.random() * ((order.size() - 0) + 0));
+							name = order.get(rand);
+							arena = plugin.raceQues.getQue(name);
+						}
+						RaceTrack track = plugin.trackManager.getRaceTrack(name);
+						if(track == null){
+					    sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.delete.exists"));
+						return true;	
+						}
+						plugin.gameScheduler.joinGame(player.getName(), track, arena, name);
+						return true;
+				}
+				else{
 				RaceTrack track = plugin.trackManager.getRaceTrack(trackName);
 				if(track == null){
 			    sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.delete.exists"));
@@ -205,6 +272,7 @@ public class URaceCommandExecutor implements CommandExecutor {
 				}
 				main.plugin.gameScheduler.joinGame(player.getName(), track, que, trackName);
 				return true;
+			  }
 			}
 			return false;
 		}

@@ -81,6 +81,9 @@ public class main extends JavaPlugin {
         	if(!lang.contains("general.cmd.page")){
         		lang.set("general.cmd.page", "Page [%page%/%total%]:");
         	}
+        	if(!lang.contains("general.cmd.full")){
+        		lang.set("general.cmd.full", "There are no race tracks available!");
+        	}
         	if(!lang.contains("general.cmd.playersOnly")){
         		lang.set("general.cmd.playersOnly", "This command is for players only!");
         	}
