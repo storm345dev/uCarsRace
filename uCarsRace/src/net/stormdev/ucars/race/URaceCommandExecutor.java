@@ -196,8 +196,8 @@ public class URaceCommandExecutor implements CommandExecutor {
 				}
 				RaceQue que = new RaceQue(track);
 				trackName = track.getTrackName();
-				if(main.plugin.ques.containsKey(trackName)){
-					que = main.plugin.ques.get(trackName);
+				if(main.plugin.raceQues.getQue(trackName) != null){
+					que = main.plugin.raceQues.getQue(trackName);
 				}
 				if(main.plugin.raceMethods.inAGame(player.getName())!=null || main.plugin.raceMethods.inGameQue(player.getName())!=null){
 					sender.sendMessage(main.colors.getError()+main.msgs.get("race.que.existing"));

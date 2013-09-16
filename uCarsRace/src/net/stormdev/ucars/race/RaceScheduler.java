@@ -26,7 +26,7 @@ import com.useful.ucarsCommon.StatValue;
  * weirdly named as a result
  */
 public class RaceScheduler {
-	//TODO NOTE: This code is probably highly extraneous in places.
+	//NOTE: This code is probably highly extraneous in places.
 	private HashMap<String, Race> games = new HashMap<String, Race>();
 	private main plugin;
 	Random random = null;
@@ -40,10 +40,13 @@ public class RaceScheduler {
 			if(plugin.getServer().getPlayer(playername).isOnline()){
 				//que.addPlayer(playername);
 				List<String> arenaque = que.getPlayers();
-				if(!arenaque.contains(playername)){
-					que.addPlayer(playername);
-					//arenaque.add(playername);
+				if(arenaque.contains(playername)){
+					plugin.getServer().getPlayer(playername).sendMessage(main.colors.getError()+main.msgs.get("race.que.existing"));
+					return true;
 				}
+				que.addPlayer(playername);
+			    //arenaque.add(playername);
+				arenaque = que.getPlayers();
 				for(String name:arenaque){
 					if(!(plugin.getServer().getPlayer(name).isOnline() && plugin.getServer().getPlayer(name) != null)){
 						arenaque.remove(name);
@@ -86,7 +89,12 @@ public class RaceScheduler {
 				que.setTransitioning(true);
 				plugin.raceQues.setQue(aname, que);
 				final String queName = aname;
-			    plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable(){
+				ArrayList<String> pls = new ArrayList<String>();
+				pls.addAll(que.getPlayers());
+				for(String name:pls){
+				plugin.getServer().getPlayer(name).sendMessage(main.colors.getInfo()+main.msgs.get("race.que.players"));
+				}
+				plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable(){
 
 					public void run() {
 						String aname = queName;
@@ -107,7 +115,7 @@ public class RaceScheduler {
 						plugin.raceQues.setQue(aname, arena);
 						startGame(arena, aname, game);
 						return;
-					}}, 100l);
+					}}, 200l); //10 seconds
 				
 			}
 		}
@@ -136,8 +144,11 @@ public class RaceScheduler {
 		ArrayList<String> assigned = new ArrayList<String>();
 		assigned.addAll(players);
 		int count = grid.size();
-		if(count > assigned.size()){
+		if(count > assigned.size()){ //If more grid slots than players, only use the right number of grid slots
 			count = assigned.size();
+		}
+		if(assigned.size() > count){
+			count = assigned.size(); //Should theoretically never happen but sometimes does?
 		}
 		for(int i=0;i<count;i++){
 		int min = 0;
@@ -145,7 +156,7 @@ public class RaceScheduler {
 		if(!(max < 1)){
 		int randomNumber = random.nextInt(max - min) + min;
 		Player p = plugin.getServer().getPlayer(assigned.get(randomNumber));
-		assigned.remove(p);
+		assigned.remove(p.getName());
 		Location loc = grid.get(i);
 		if(p.getVehicle()!=null){
 			p.getVehicle().eject();
@@ -157,6 +168,11 @@ public class RaceScheduler {
 		p.setMetadata("car.stayIn", new StatValue(null, plugin));
 		cars.add(car);
 		}
+		}
+		if(assigned.size() > 0){
+			Player p = plugin.getServer().getPlayer(assigned.get(0));
+			p.sendMessage(main.colors.getError()+main.msgs.get("race.que.full"));
+			race.leave(p.getName(), true);
 		}
 		final Map<String, Location> locations = new HashMap<String, Location>();
 		for(String name:players){
@@ -225,10 +241,18 @@ public class RaceScheduler {
 	}
     public Boolean trackInUse(String arenaName){
     	Set<String> keys = this.games.keySet();
-    	for(String key:keys){
+    	ArrayList<String> kz = new ArrayList<String>();
+    	kz.addAll(keys);
+    	for(String key:kz){
     		Race game = this.games.get(key);
     		if(game.getTrackName().equalsIgnoreCase(arenaName)){
+    			if(!game.running){
+    				removeRace(game.getTrackName());
+    				this.games.remove(key);
+    			}
+    			else{
     			return true;
+    			}
     		}
     	}
     	return false;
@@ -242,7 +266,7 @@ public class RaceScheduler {
     				Player pl = plugin.getServer().getPlayer(p);
     				pl.removeMetadata("car.stayIn", plugin);
     			}
-    			this.games.remove(game.getGameId());
+    			this.games.remove(key);
     		}
     	}
     	return false;

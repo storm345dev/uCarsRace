@@ -20,7 +20,7 @@ public class RaceMethods {
         Race mgame = null;
     	for(String key:keys){
     		Race game = games.get(key);
-    		if(game.getPlayers().contains(playername)){
+    		if(game.getInPlayers().contains(playername)){
     			inAGame = true;
     			mgame = game;
     		}

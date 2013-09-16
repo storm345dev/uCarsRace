@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import net.stormdev.ucars.utils.CheckpointCheck;
 import net.stormdev.ucars.utils.RaceEndEvent;
@@ -28,7 +29,7 @@ public class Race {
 	private String gameId = "";
 	private RaceTrack track = null;
 	private String trackName = "";
-	private String winner = "Unknown";
+	private String winner = null;
 	public Boolean running = false;
 	private BukkitTask task = null;
 	public int maxCheckpoints = 3;
@@ -36,6 +37,7 @@ public class Race {
 	public ArrayList<String> finished = new ArrayList<String>();
 	public int finishCountdown = 60;
 	Boolean ending = false;
+	Boolean ended = false;
 	public Map<String, Integer> checkpoints = new HashMap<String, Integer>();
 	public Map<String, Integer> lapsLeft = new HashMap<String, Integer>();
 	public Map<String, ItemStack[]> oldInventories = new HashMap<String, ItemStack[]>();
@@ -72,10 +74,15 @@ public class Race {
 		}
 		return false;
 	}
-	public void leave(String playername){
+	public void leave(String playername, Boolean quit){
+		if(quit){
 		this.getPlayers().remove(playername);
+		}
 		this.playerOut(playername);
 		Player player = main.plugin.getServer().getPlayer(playername);
+		if(quit){
+		this.checkpoints.remove(playername);
+		this.lapsLeft.remove(playername);
 		if(player != null){
 			player.getInventory().clear();
 		}
@@ -96,6 +103,7 @@ public class Race {
 				Player p=main.plugin.getServer().getPlayer(playerName);
 				p.sendMessage(ChatColor.GOLD+playername+" quit the race!");
 			}
+		}
 		}
 		return;
 	}
@@ -135,7 +143,15 @@ public class Race {
 					} catch (InterruptedException e) {
 					}
 				}
-				race.end();
+				if(!ended){
+				main.plugin.getServer().getScheduler().runTask(main.plugin, new Runnable(){
+
+					public void run() {
+						race.end();
+						return;
+					}});
+				}
+				return;
 			}});
     }
     public String getWinner(){
@@ -154,14 +170,22 @@ public class Race {
 				main.plugin.getServer().getPluginManager().callEvent(event);
 				return;
 			}}, main.config.getLong("general.raceTickrate"), main.config.getLong("general.raceTickrate"));
-    	main.plugin.getServer().getPluginManager().callEvent(new RaceStartEvent(this));
+    	try {
+			main.plugin.getServer().getPluginManager().callEvent(new RaceStartEvent(this));
+		} catch (Exception e) {
+			main.logger.log("Error starting race!", Level.SEVERE);
+			end();
+		}
+    	return;
     }
     public void end(){
     	this.running = false;
     	if(task != null){
     		task.cancel();
     	}
-    	for(String playername:this.players){
+        ArrayList<String> pls = new ArrayList<String>();
+        pls.addAll(this.inplayers);
+    	for(String playername:pls){
     		main.plugin.getServer().getPluginManager().callEvent(new RaceFinishEvent(this, playername));
     	}
     	RaceEndEvent evt = new RaceEndEvent(this);

@@ -61,8 +61,13 @@ public class URaceListener implements Listener {
 	@EventHandler (priority = EventPriority.HIGHEST)
 	void RaceEnd(RaceEndEvent event){
 		Race game = event.getRace();
+		game.running = false;
 		if(plugin.gameScheduler.trackInUse(game.getTrackName())){
 			plugin.gameScheduler.removeRace(game.getTrackName());
+		}
+		try {
+			plugin.gameScheduler.stopGame(game.getTrack(), game.getGameId());
+		} catch (Exception e) {
 		}
 		plugin.gameScheduler.reCalculateQues();
 	}
@@ -97,39 +102,30 @@ public class URaceListener implements Listener {
 				else{
 					player.teleport(loc);
 				}
-					player.getInventory().clear();
-					List<String> inners = new ArrayList<String>();
-					inners.addAll(inplayers);
-					for(String tplayername:inners){
-						if(tplayername != game.getWinner()){
-							inplayers.remove(tplayername);
-						}
-					}
 				if(player.isOnline()){
-					if(!inplayers.contains(playername)){
 						player.getInventory().clear();
 						if(game.getOldInventories().containsKey(player.getName())){
 							player.getInventory().setContents(game.getOldInventories().get(player.getName()));
 						}
-					}
-					player.sendMessage(main.colors.getInfo()+game.getWinner()+main.msgs.get("race.end.won"));
 				}
 				if(game.finished.contains(playername)){
 					finished = true;
 				}
 				else{
-				int laps = game.totalLaps - game.lapsLeft.get(playername) +1;
+				for(String pname:game.getPlayers()){
+				int laps = game.totalLaps - game.lapsLeft.get(pname) +1;
 				int checkpoints;
 				try {
-					checkpoints = game.checkpoints.get(playername);
+					checkpoints = game.checkpoints.get(pname);
 				} catch (Exception e) {
 					checkpoints = 0;
 				}
 				int score = (laps*game.getMaxCheckpoints()) + checkpoints;
-				if(game.getWinner().equals(playername)){
+				if(game.getWinner().equals(pname)){
 					score = score+1;
 				}
-				scores.put(playername, score);
+				scores.put(pname, score);
+				}
 				}
 				player.getInventory().clear();
 				if(game.getOldInventories().containsKey(player.getName())){
@@ -146,7 +142,20 @@ public class URaceListener implements Listener {
 			if(p.getName().equals(event.getPlayername())){
 			if(p!=null){
 				String msg = main.msgs.get("race.end.position");
-				msg = msg.replaceAll("%position%", ""+(i+1));
+				String pos = ""+(i+1);
+				if(pos.endsWith("1")){
+					pos = pos+"st";
+				}
+				else if(pos.endsWith("2")){
+					pos = pos+"nd";
+				}
+				else if(pos.endsWith("3")){
+					pos = pos+"rd";
+				}
+				else {
+					pos = pos+"th";
+				}
+				msg = msg.replaceAll("%position%", ""+pos);
 				p.sendMessage(main.colors.getSuccess()+msg);
 			}
 			}
@@ -164,9 +173,28 @@ public class URaceListener implements Listener {
 				}
 			}
 			String msg = main.msgs.get("race.end.position");
-			msg = msg.replaceAll("%position%", ""+position);
+			String pos = ""+position;
+			if(pos.endsWith("1")){
+				pos = pos+"st";
+			}
+			else if(pos.endsWith("2")){
+				pos = pos+"nd";
+			}
+			else if(pos.endsWith("3")){
+				pos = pos+"rd";
+			}
+			else {
+				pos = pos+"th";
+			}
+			msg = msg.replaceAll("%position%", ""+pos);
 			p.sendMessage(main.colors.getSuccess()+msg);
 			}
+		}
+		game.leave(event.getPlayername(), false);
+		plugin.gameScheduler.updateGame(game);
+		if(game.getInPlayers().size() < 1){
+			game.ended = true;
+			game.end();
 		}
 		return;
 	}
@@ -185,7 +213,7 @@ public class URaceListener implements Listener {
 			return;
 		}
 		else{
-			game.leave(player.getName());
+			game.leave(player.getName(), true);
 			return;
 	    }
 	}
@@ -204,7 +232,7 @@ public class URaceListener implements Listener {
 			return;
 		}
 		else{
-			game.leave(player.getName());
+			game.leave(player.getName(), true);
 			return;
 	    }
 	}
@@ -267,7 +295,7 @@ public class URaceListener implements Listener {
 		for(String playername:pls){
 			Player player = plugin.getServer().getPlayer(playername);
 			if(player == null){
-				game.leave(playername);
+				game.leave(playername, true);
 			}
 			else{
 			Location playerLoc = player.getLocation();
@@ -341,16 +369,22 @@ public class URaceListener implements Listener {
 						}
 					}
 					if(lapsLeft < 1){
+					Boolean won = game.getWinner() == null;
+					if(won){
 					game.setWinner(playername);
+					}
 					game.finish(playername);
+					if(won){
 					ArrayList<String> plz = new ArrayList<String>();
 					plz.addAll(game.getPlayers());
 					for(String pname:plz){
-						if(!(plugin.getServer().getPlayer(pname) == null)){
+						if(!(plugin.getServer().getPlayer(pname) == null) && !playername.equals(pname)){
 							String msg = main.msgs.get("race.end.soon");
 							msg = msg.replaceAll("%name%", playername);
+							plugin.getServer().getPlayer(pname).sendMessage(main.colors.getSuccess()+game.getWinner()+main.msgs.get("race.end.won"));
 							plugin.getServer().getPlayer(pname).sendMessage(main.colors.getInfo()+msg);
 						}
+					}
 					}
 					}
 				}

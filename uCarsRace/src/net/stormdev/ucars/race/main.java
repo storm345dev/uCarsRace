@@ -121,7 +121,7 @@ public class main extends JavaPlugin {
         		lang.set("setup.create.done", "Successfully created Race Track %name%!");
         	}
         	if(!lang.contains("race.que.existing")){
-        		lang.set("race.que.existing", "You are already in a game que! Please leave it before joining this one!");
+        		lang.set("race.que.existing", "You are already in a game/que! Please leave it before joining this one!");
         	}
         	if(!lang.contains("race.que.full")){
         		lang.set("race.que.full", "Race que full!");
@@ -134,6 +134,9 @@ public class main extends JavaPlugin {
         	}
         	if(!lang.contains("race.que.left")){
         		lang.set("race.que.left", " left the race que!");
+        	}
+        	if(!lang.contains("race.que.players")){
+        		lang.set("race.que.players", "Acquired minimum players for race! Waiting 10 seconds for additional players to join...");
         	}
         	if(!lang.contains("race.que.preparing")){
         		lang.set("race.que.preparing", "Preparing race...");
@@ -160,7 +163,7 @@ public class main extends JavaPlugin {
         		lang.set("race.end.soon", "You have 1 minute before the race ends!");
         	}
         	if(!lang.contains("race.end.position")){
-        		lang.set("race.end.position", "You finished in place %position%!");
+        		lang.set("race.end.position", "You finished %position%!");
         	}
         	//Setup the config
         	if (!config.contains("setup.create.wand")) {
