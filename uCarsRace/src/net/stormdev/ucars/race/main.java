@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -42,7 +43,9 @@ public class main extends JavaPlugin {
 	public Ques raceQues = null;
 	public static Lang msgs = null;
 	public RaceMethods raceMethods = null;
+	public Random random = null;
 	public void onEnable(){
+		random = new Random();
 		plugin = this;
 		File langFile = new File(getDataFolder().getAbsolutePath()
 				+ File.separator + "lang.yml");

@@ -18,10 +18,8 @@ import org.bukkit.inventory.ItemStack;
 
 public class URaceCommandExecutor implements CommandExecutor {
 	main plugin = null;
-	Random random = null;
 	public URaceCommandExecutor(main plugin){
 		this.plugin = plugin;
-		random = new Random();
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String alias,
@@ -234,7 +232,7 @@ public class URaceCommandExecutor implements CommandExecutor {
 								sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.full"));
 								return true;
 							}
-							int randomNumber = random.nextInt(max - min) + min;
+							int randomNumber = main.plugin.random.nextInt(max - min) + min;
 							RaceTrack track = main.plugin.trackManager.getRaceTracks().get(randomNumber);
 							RaceQue que = new RaceQue(track);
 							plugin.gameScheduler.joinGame(player.getName(), track, que, track.getTrackName());
