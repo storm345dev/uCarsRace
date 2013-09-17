@@ -12,7 +12,7 @@ commands:
         default: op
    urace:
         description: This is the playing of race tracks
-        usage: /<command> [List (Page)] [Join (Track/"auto")]
+        usage: /<command> [List (Page)] [Join (Track/"auto")] [Leave] [Queues]
         permission: ucarsrace.race
         permission-message: You don't have access to this command
         default: true

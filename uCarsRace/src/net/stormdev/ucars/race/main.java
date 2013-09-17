@@ -81,6 +81,9 @@ public class main extends JavaPlugin {
 		logger = new CustomLogger(getServer().getConsoleSender(), getLogger());
         try {
         	//Setup the Lang file
+        	if(!lang.contains("general.cmd.leave.success")){
+        		lang.set("general.cmd.leave.success", "Successfully left %name%!");
+        	}
         	if(!lang.contains("general.cmd.page")){
         		lang.set("general.cmd.page", "Page [%page%/%total%]:");
         	}
@@ -89,6 +92,9 @@ public class main extends JavaPlugin {
         	}
         	if(!lang.contains("general.cmd.playersOnly")){
         		lang.set("general.cmd.playersOnly", "This command is for players only!");
+        	}
+        	if(!lang.contains("general.cmd.leave.fail")){
+        		lang.set("general.cmd.leave.fail", "You aren't in a game/que!");
         	}
         	if(!lang.contains("general.cmd.delete.success")){
         		lang.set("general.cmd.delete.success", "Successfully deleted track %name%!");
@@ -142,7 +148,7 @@ public class main extends JavaPlugin {
         		lang.set("race.que.left", " left the race que!");
         	}
         	if(!lang.contains("race.que.players")){
-        		lang.set("race.que.players", "Acquired minimum players for race! Waiting 10 seconds for additional players to join...");
+        		lang.set("race.que.players", "Acquired minimum players for race! Waiting %time% seconds for additional players to join...");
         	}
         	if(!lang.contains("race.que.preparing")){
         		lang.set("race.que.preparing", "Preparing race...");
@@ -180,6 +186,9 @@ public class main extends JavaPlugin {
 			}
         	if (!config.contains("general.raceTickrate")) {
 				config.set("general.raceTickrate", 6l);
+			}
+        	if (!config.contains("general.raceGracePeriod")) {
+				config.set("general.raceGracePeriod", (double)10.0);
 			}
         	//Setup the colour scheme
         	if (!config.contains("colorScheme.success")) {

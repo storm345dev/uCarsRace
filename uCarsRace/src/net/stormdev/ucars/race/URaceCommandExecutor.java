@@ -14,6 +14,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Vehicle;
 import org.bukkit.inventory.ItemStack;
 
 public class URaceCommandExecutor implements CommandExecutor {
@@ -194,6 +195,10 @@ public class URaceCommandExecutor implements CommandExecutor {
 				}
 				trackName = args[1];
 				if(trackName.equalsIgnoreCase("auto")){
+					if(main.plugin.raceMethods.inAGame(player.getName())!=null || main.plugin.raceMethods.inGameQue(player.getName())!=null){
+						sender.sendMessage(main.colors.getError()+main.msgs.get("race.que.existing"));
+						return true;
+					}
 						List<String> gameArenas = new ArrayList<String>();
 						List<String> order = new ArrayList<String>();
 						int waitingPlayers = 0;
@@ -250,6 +255,11 @@ public class URaceCommandExecutor implements CommandExecutor {
 					    sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.delete.exists"));
 						return true;	
 						}
+						if(player.getVehicle()!=null){
+							Vehicle veh = (Vehicle) player.getVehicle();
+							veh.eject();
+							veh.remove();
+						}
 						plugin.gameScheduler.joinGame(player.getName(), track, arena, name);
 						return true;
 				}
@@ -268,9 +278,96 @@ public class URaceCommandExecutor implements CommandExecutor {
 					sender.sendMessage(main.colors.getError()+main.msgs.get("race.que.existing"));
 					return true;
 				}
+				if(player.getVehicle()!=null){
+					Vehicle veh = (Vehicle) player.getVehicle();
+					veh.eject();
+					veh.remove();
+				}
 				main.plugin.gameScheduler.joinGame(player.getName(), track, que, trackName);
 				return true;
 			  }
+			}
+			else if(command.equalsIgnoreCase("queues") || command.equalsIgnoreCase("ques")){
+				int page = 1;
+				if(args.length > 1){
+					try {
+						page = Integer.parseInt(args[1]);
+					} catch (NumberFormatException e) {
+						page = 1;
+					}
+				}
+				ArrayList<String> names = new ArrayList<String>();
+				names.addAll(plugin.raceQues.getQues());
+				double total = names.size() / 6;
+				int totalpages = (int) Math.ceil(total);
+				int pos = (page-1) * 6;
+				if(page > totalpages){
+					page = totalpages;
+				}
+				if(pos > names.size()){
+					pos = names.size() - 5;
+				}
+				if(pos < 0){
+					pos = 0;
+				}
+				if(page < 0){
+					page = 0;
+				}
+				String msg = main.msgs.get("general.cmd.page");
+				msg = msg.replaceAll(Pattern.quote("%page%"), ""+(page+1));
+				msg = msg.replaceAll(Pattern.quote("%total%"), ""+(totalpages+1));
+				sender.sendMessage(main.colors.getTitle()+msg);
+				for(int i=pos;i<(i+6)&&i<names.size();i++){
+					String Trackname = names.get(i);
+					RaceQue que = plugin.raceQues.getQue(Trackname);
+					ChatColor color = ChatColor.GREEN;
+					if(que.getHowManyPlayers() > (que.getPlayerLimit() -1)){
+						color = ChatColor.RED;
+					}
+					if(que.getHowManyPlayers() > (que.getPlayerLimit() - 2)){
+						color = ChatColor.YELLOW;
+					}
+				    if(que.getHowManyPlayers() < 2){
+				    	color = ChatColor.YELLOW;
+				    }
+					char[] chars = Trackname.toCharArray();
+					if(chars.length >= 1){
+						String s = ""+chars[0];
+						s = s.toUpperCase();
+						Trackname = color + s + Trackname.substring(1) + main.colors.getInfo()+" ("+color+que.getHowManyPlayers()+main.colors.getInfo()+"/"+que.getPlayerLimit()+")";
+					}
+					sender.sendMessage(main.colors.getInfo()+Trackname);
+				}
+				return true;
+			}
+			else if(command.equalsIgnoreCase("leave")){
+				if(player == null){
+					sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.playersOnly"));
+					return true;
+				}
+				Boolean game = true;
+				Race race = plugin.raceMethods.inAGame(player.getName());
+				String que = plugin.raceMethods.inGameQue(player.getName());
+				if(race == null){
+					game = false;
+				}
+				if(que == null){
+					if(!game){
+						sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.leave.fail"));
+						return true;
+					}
+				}
+				if(game){
+					race.leave(player.getName(), true);
+				}
+				else{
+					RaceQue queue = plugin.raceQues.getQue(que);
+					plugin.gameScheduler.leaveQue(player.getName(), queue, queue.getTrack().getTrackName());
+					String msg = main.msgs.get("general.cmd.leave.success");
+					msg = msg.replaceAll(Pattern.quote("%name%"), que);
+					sender.sendMessage(main.colors.getSuccess()+msg);
+				}
+				return true;
 			}
 			return false;
 		}

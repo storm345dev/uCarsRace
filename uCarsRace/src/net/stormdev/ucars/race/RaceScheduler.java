@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import net.stormdev.ucars.utils.RaceQue;
 import net.stormdev.ucars.utils.RaceTrack;
@@ -19,6 +20,7 @@ import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import com.useful.ucars.ucars;
 import com.useful.ucarsCommon.StatValue;
 
 /*
@@ -91,8 +93,13 @@ public class RaceScheduler {
 				final String queName = aname;
 				ArrayList<String> pls = new ArrayList<String>();
 				pls.addAll(que.getPlayers());
+				double seconds = main.config.getDouble("general.raceGracePeriod");
+				double time = seconds*20;
+				long grace = (long) time;
 				for(String name:pls){
-				plugin.getServer().getPlayer(name).sendMessage(main.colors.getInfo()+main.msgs.get("race.que.players"));
+					String msg = main.msgs.get("race.que.players");
+					msg = msg.replaceAll(Pattern.quote("%time%"), ""+seconds);
+				plugin.getServer().getPlayer(name).sendMessage(main.colors.getInfo()+msg);
 				}
 				plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable(){
 
@@ -115,7 +122,7 @@ public class RaceScheduler {
 						plugin.raceQues.setQue(aname, arena);
 						startGame(arena, aname, game);
 						return;
-					}}, 200l); //10 seconds
+					}}, grace); //10 seconds
 				
 			}
 		}

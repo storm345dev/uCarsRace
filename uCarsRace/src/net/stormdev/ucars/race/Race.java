@@ -20,6 +20,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Vehicle;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -80,11 +81,17 @@ public class Race {
 		}
 		this.playerOut(playername);
 		Player player = main.plugin.getServer().getPlayer(playername);
+		player.removeMetadata("car.stayIn", main.plugin);
 		if(quit){
 		this.checkpoints.remove(playername);
 		this.lapsLeft.remove(playername);
 		if(player != null){
 			player.getInventory().clear();
+			if(player.getVehicle()!=null){
+				Vehicle veh = (Vehicle) player.getVehicle();
+				veh.eject();
+				veh.remove();
+			}
 		}
 		if(this.getOldInventories().containsKey(playername)){
 			if(player != null){
@@ -105,7 +112,17 @@ public class Race {
 			}
 		}
 		}
+		recalculateGame();
 		return;
+	}
+	public void recalculateGame(){
+		if(this.inplayers.size() < 1){
+			this.running = false;
+			this.ended = true;
+			this.ending = true;
+			end();
+			main.plugin.gameScheduler.reCalculateQues();
+		}
 	}
 	public Boolean isEmpty(){
 		if(this.players.size() < 1){
