@@ -265,6 +265,7 @@ public class main extends JavaPlugin {
 		}
 		HashMap<String, Race> games = this.gameScheduler.getGames();
 		for(Race r:games.values()){
+			r.end();
 			try {
 				this.gameScheduler.stopGame(r.getTrack(), r.getGameId());
 			} catch (Exception e) {

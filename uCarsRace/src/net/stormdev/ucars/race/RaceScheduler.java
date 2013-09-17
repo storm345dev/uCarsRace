@@ -227,7 +227,7 @@ public class RaceScheduler {
 		if(!trackInUse(track.getTrackName())){
 			return;
 		}
-		removeRace(gameId);
+		removeRace(track.getTrackName());
 		reCalculateQues();
 		return;
 	}
