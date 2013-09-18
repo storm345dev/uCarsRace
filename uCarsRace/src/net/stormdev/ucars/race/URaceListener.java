@@ -311,10 +311,10 @@ public class URaceListener implements Listener {
 			}
 			Integer[] toCheck = new Integer[]{};
 			if(checkNewLap){
-				toCheck = new Integer[]{0,(old-1)};
+				toCheck = new Integer[]{0};
 			}
 			else{
-				toCheck = new Integer[]{(old+1),(old-1)};
+				toCheck = new Integer[]{(old+1)};
 			}
 			CheckpointCheck check = game.playerAtCheckpoint(toCheck, player, plugin.getServer());
 			
