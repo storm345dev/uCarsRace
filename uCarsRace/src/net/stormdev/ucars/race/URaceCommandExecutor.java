@@ -348,7 +348,6 @@ public class URaceCommandExecutor implements CommandExecutor {
 				Boolean game = true;
 				Race race = plugin.raceMethods.inAGame(player.getName());
 				String que = plugin.raceMethods.inGameQue(player.getName());
-				main.logger.info("que: "+que);
 				if(race == null){
 					game = false;
 				}
