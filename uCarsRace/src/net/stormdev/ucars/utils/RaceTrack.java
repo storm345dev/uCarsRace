@@ -13,7 +13,7 @@ public class RaceTrack implements Serializable {
 	String trackname = "Unknown";
 	int maxplayers = 10;
 	int minplayers = 2;
-	int laps = 3;
+	public int laps = 3;
 	SerializableLocation lobby = null;
 	SerializableLocation exit = null;
 	SerializableLocation line1 = null;

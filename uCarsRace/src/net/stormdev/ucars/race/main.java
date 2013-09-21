@@ -96,6 +96,9 @@ public class main extends JavaPlugin {
         	if(!lang.contains("general.cmd.leave.fail")){
         		lang.set("general.cmd.leave.fail", "You aren't in a game/que!");
         	}
+        	if(!lang.contains("general.cmd.setlaps.success")){
+        		lang.set("general.cmd.setlaps.success", "Successfully set laps for track %name%!");
+        	}
         	if(!lang.contains("general.cmd.delete.success")){
         		lang.set("general.cmd.delete.success", "Successfully deleted track %name%!");
         	}

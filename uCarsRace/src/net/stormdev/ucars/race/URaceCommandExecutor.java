@@ -130,7 +130,30 @@ public class URaceCommandExecutor implements CommandExecutor {
 				}
 				return true;
 			}
-			//TODO
+			else if(command.equalsIgnoreCase("setLaps")){
+				//TODO
+				if(args.length < 3){
+					return false;
+				}
+				String trackname = args[1];
+				if(!plugin.trackManager.raceTrackExists(trackname)){
+					sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.delete.exists"));
+					return true;
+				}
+				String lapsStr = args[2];
+				int laps = 3;
+				try {
+					laps = Integer.parseInt(lapsStr);
+				} catch (NumberFormatException e) {
+					return false;
+				}
+				plugin.trackManager.getRaceTrack(trackname).laps = laps;
+				plugin.trackManager.save();
+				String msg = main.msgs.get("general.cmd.setlaps.success");
+				msg = msg.replaceAll(Pattern.quote("%name%"), plugin.trackManager.getRaceTrack(trackname).getTrackName());
+				sender.sendMessage(main.colors.getSuccess()+msg);
+				return true;
+			}
 			return false;
 		}
 		else if(cmd.getName().equalsIgnoreCase("urace")){
