@@ -78,6 +78,17 @@ public class Race {
 	public void leave(String playername, Boolean quit){
 		if(quit){
 		this.getPlayers().remove(playername);
+		if(this.getPlayers().size() < 2){
+		ArrayList<String> plz = new ArrayList<String>();
+		plz.addAll(getInPlayers());
+		for(String pname:plz){
+			if(!(main.plugin.getServer().getPlayer(pname) == null) && !playername.equals(pname)){
+				String msg = main.msgs.get("race.end.soon");
+				main.plugin.getServer().getPlayer(pname).sendMessage(main.colors.getInfo()+msg);
+			}
+		}
+		startEndCount();
+		}
 		}
 		this.playerOut(playername);
 		Player player = main.plugin.getServer().getPlayer(playername);
