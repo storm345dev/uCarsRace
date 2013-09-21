@@ -1,6 +1,6 @@
 name: uCarsRace
 main: net.stormdev.ucars.race.main
-version: 0.1-BETA
+version: 0.2-BETA
 softdepend: [Vault]
 depend: [uCars]
 commands:
