@@ -129,8 +129,11 @@ public class URaceListener implements Listener {
 					checkpoints = 0;
 				}
 				int score = (laps*game.getMaxCheckpoints()) + checkpoints;
-				if(game.getWinner().equals(pname)){
-					score = score+1;
+				try {
+					if(game.getWinner().equals(pname)){
+						score = score+1;
+					}
+				} catch (Exception e) {
 				}
 				scores.put(pname, score);
 				}
