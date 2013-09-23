@@ -22,6 +22,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
@@ -30,12 +31,16 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.metadata.MetadataValue;
 
 import com.useful.ucars.ucars;
+import com.useful.ucarsCommon.StatValue;
 
 public class URaceListener implements Listener {
 	main plugin = null;
@@ -468,5 +473,46 @@ public class URaceListener implements Listener {
 				lines[3] = ChatColor.ITALIC + "to use";
 			}
 		}
+	}
+	@EventHandler
+	void playerDeathEvent(PlayerDeathEvent event){
+		Player player = event.getEntity();
+		if(plugin.raceMethods.inAGame(player.getName()) == null){
+			return;
+		}
+	    if(!(player.getVehicle() == null)){
+		player.getVehicle().eject();
+        player.getVehicle().remove();
+	    }
+	    List<MetadataValue> metas = null;
+		if(player.hasMetadata("car.stayIn")){
+			metas = player.getMetadata("car.stayIn");
+			for(MetadataValue val:metas){
+				player.removeMetadata("car.stayIn", val.getOwningPlugin());
+			}
+		}
+	    return;
+	}
+	@EventHandler
+	void playerRespawnEvent(PlayerRespawnEvent event){
+		final Player player = event.getPlayer();
+		if(plugin.raceMethods.inAGame(player.getName()) == null){
+			return;
+		}
+		Race race = plugin.raceMethods.inAGame(player.getName());
+		int checkpoint = 0;
+		try {
+			checkpoint = race.checkpoints.get(player.getName());
+		} catch (Exception e) {
+		}
+		final Location loc = race.getTrack().getCheckpoints().get(checkpoint).getLocation(plugin.getServer()).add(0, 2, 0);
+	    plugin.getServer().getScheduler().runTask(plugin, new Runnable(){
+
+			public void run() {
+				player.teleport(loc);
+			}});
+		Minecart cart = (Minecart) loc.getWorld().spawnEntity(loc, EntityType.MINECART);
+	    cart.setPassenger(player);
+	    player.setMetadata("car.stayIn", new StatValue(null, plugin));
 	}
 }
