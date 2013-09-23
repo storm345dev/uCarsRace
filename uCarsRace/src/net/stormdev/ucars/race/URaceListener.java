@@ -21,6 +21,7 @@ import net.stormdev.ucars.utils.ValueComparator;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
@@ -395,6 +396,35 @@ public class URaceListener implements Listener {
 		plugin.gameScheduler.updateGame(game);
 	}
 	@EventHandler
+	void signClicker(PlayerInteractEvent event){
+		if(event.getAction() != Action.RIGHT_CLICK_BLOCK){
+			return;
+		}
+		if(!(event.getClickedBlock().getState() instanceof Sign)){
+			return;
+		}
+		Sign sign = (Sign) event.getClickedBlock().getState();
+		String[] lines = sign.getLines();
+		if(!ChatColor.stripColor(lines[0]).equalsIgnoreCase("[uRace]")){
+			return;
+		}
+		String cmd = ChatColor.stripColor(lines[1]);
+		if(cmd.equalsIgnoreCase("list")){
+			int page = 1;
+			try {
+				page = Integer.parseInt(ChatColor.stripColor(lines[2]));
+			} catch (NumberFormatException e) {
+			}
+			main.cmdExecutor.urace(event.getPlayer(), new String[]{"list", ""+page}, event.getPlayer());
+		}
+		else if(cmd.equalsIgnoreCase("leave") || cmd.equalsIgnoreCase("quit") || cmd.equalsIgnoreCase("exit")){
+			main.cmdExecutor.urace(event.getPlayer(), new String[]{"leave"}, event.getPlayer());
+		}
+		else if(cmd.equalsIgnoreCase("join")){
+			main.cmdExecutor.urace(event.getPlayer(), new String[]{"join", ChatColor.stripColor(lines[2]).toLowerCase()}, event.getPlayer());
+		}
+	}
+	@EventHandler
 	void signWriter(SignChangeEvent event){
 		String[] lines = event.getLines();
 		if(ChatColor.stripColor(lines[0]).equalsIgnoreCase("[uRace]")){
@@ -403,6 +433,10 @@ public class URaceListener implements Listener {
 			String cmd = ChatColor.stripColor(lines[1]);
 			if(cmd.equalsIgnoreCase("list")){
 				lines[1] = main.colors.getInfo()+"List";
+				if(!(lines[2].length() < 1)){
+					text = false;
+				}
+				lines[2] = main.colors.getSuccess()+ChatColor.stripColor(lines[2]);
 			}
 			else if(cmd.equalsIgnoreCase("join")){
 				lines[1] = main.colors.getInfo()+"Join";
