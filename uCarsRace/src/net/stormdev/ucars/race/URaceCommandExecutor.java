@@ -131,7 +131,6 @@ public class URaceCommandExecutor implements CommandExecutor {
 				return true;
 			}
 			else if(command.equalsIgnoreCase("setLaps")){
-				//TODO
 				if(args.length < 3){
 					return false;
 				}

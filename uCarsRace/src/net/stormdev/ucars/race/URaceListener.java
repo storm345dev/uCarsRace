@@ -28,6 +28,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -392,5 +393,46 @@ public class URaceListener implements Listener {
 			}
 		}
 		plugin.gameScheduler.updateGame(game);
+	}
+	@EventHandler
+	void signWriter(SignChangeEvent event){
+		String[] lines = event.getLines();
+		if(ChatColor.stripColor(lines[0]).equalsIgnoreCase("[uRace]")){
+			lines[0] = main.colors.getTitle() + "[uRace]";
+			Boolean text = true;
+			String cmd = ChatColor.stripColor(lines[1]);
+			if(cmd.equalsIgnoreCase("list")){
+				lines[1] = main.colors.getInfo()+"List";
+			}
+			else if(cmd.equalsIgnoreCase("join")){
+				lines[1] = main.colors.getInfo()+"Join";
+				lines[2] = main.colors.getSuccess()+ChatColor.stripColor(lines[2]);
+				if(lines[2].equalsIgnoreCase("auto")){
+				   lines[2] = main.colors.getTp() + "Auto";	
+				}
+				text = false;
+			}
+			else if(cmd.equalsIgnoreCase("leave") || cmd.equalsIgnoreCase("exit") || cmd.equalsIgnoreCase("quit")){
+				char[] raw = cmd.toCharArray();
+				if(raw.length > 1){
+				String start = ""+raw[0];
+				start = start.toUpperCase();
+				String body = "";
+				for(int i=1;i<raw.length;i++){
+					body = body+raw[i];
+				}
+				body = body.toLowerCase();
+				cmd = start+body;
+			    }
+				lines[1] = main.colors.getInfo() + cmd;
+			}
+			else{
+				text = false;
+			}
+			if(text){
+				lines[2] = ChatColor.ITALIC + "Right click";
+				lines[3] = ChatColor.ITALIC + "to use";
+			}
+		}
 	}
 }
