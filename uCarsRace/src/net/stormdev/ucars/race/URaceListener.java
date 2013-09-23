@@ -30,6 +30,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -514,5 +515,15 @@ public class URaceListener implements Listener {
 		Minecart cart = (Minecart) loc.getWorld().spawnEntity(loc, EntityType.MINECART);
 	    cart.setPassenger(player);
 	    player.setMetadata("car.stayIn", new StatValue(null, plugin));
+	    return;
+	}
+	@EventHandler
+	void blockBreak(BlockBreakEvent event){
+	    Player player = event.getPlayer();
+	    if(plugin.raceMethods.inAGame(player.getName()) == null){
+			return;
+		}
+	    event.setCancelled(true);
+	    return;
 	}
 }
