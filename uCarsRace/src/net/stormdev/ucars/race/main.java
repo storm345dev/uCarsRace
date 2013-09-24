@@ -11,6 +11,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 
+import net.stormdev.mariokartAddons.MarioKart;
 import net.stormdev.ucars.utils.Ques;
 import net.stormdev.ucars.utils.RaceMethods;
 import net.stormdev.ucars.utils.RaceQue;
@@ -44,6 +45,7 @@ public class main extends JavaPlugin {
 	public static Lang msgs = null;
 	public RaceMethods raceMethods = null;
 	public Random random = null;
+	public static MarioKart marioKart = null;
 	public void onEnable(){
 		random = new Random();
 		plugin = this;
@@ -193,6 +195,39 @@ public class main extends JavaPlugin {
         	if (!config.contains("general.raceGracePeriod")) {
 				config.set("general.raceGracePeriod", (double)10.0);
 			}
+        	if(!config.contains("mariokart.enable")){
+        		config.set("mariokart.enable", true);
+        	}
+        	if(!config.contains("mariokart.redShell")){
+        		config.set("mariokart.redShell", "351:1");
+        	}
+        	if(!config.contains("mariokart.greenShell")){
+        		config.set("mariokart.greenShell", "351:2");
+        	}
+        	if(!config.contains("mariokart.blueShell")){
+        		config.set("mariokart.blueShell", "351:12");
+        	}
+        	if(!config.contains("mariokart.banana")){
+        		config.set("mariokart.banana", "351:11");
+        	}
+        	if(!config.contains("mariokart.star")){
+        		config.set("mariokart.star", "399");
+        	}
+        	if(!config.contains("mariokart.lightning")){
+        		config.set("mariokart.lightning", "351:7");
+        	}
+        	if(!config.contains("mariokart.bomb")){
+        		config.set("mariokart.bomb", "46");
+        	}
+        	if(!config.contains("mariokart.pow")){
+        		config.set("mariokart.pow", "79");
+        	}
+        	if(!config.contains("mariokart.random")){
+        		config.set("mariokart.random", "159:4");
+        	}
+        	if(!config.contains("mariokart.mushroom")){
+        		config.set("mariokart.mushroom", "40");
+        	}
         	//Setup the colour scheme
         	if (!config.contains("colorScheme.success")) {
 				config.set("colorScheme.success", "&a");
@@ -259,6 +294,8 @@ public class main extends JavaPlugin {
 		this.raceQues = new Ques(this);
 		this.raceMethods = new RaceMethods();
 		this.gameScheduler = new RaceScheduler();
+		//Setup marioKart
+		marioKart = new MarioKart(this);
 		logger.info("uCarsRace v"+plugin.getDescription().getVersion()+" has been enabled!");
 	}
 	

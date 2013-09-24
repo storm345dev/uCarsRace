@@ -9,6 +9,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
+import net.stormdev.mariokartAddons.KartAction;
 import net.stormdev.ucars.utils.CheckpointCheck;
 import net.stormdev.ucars.utils.RaceEndEvent;
 import net.stormdev.ucars.utils.RaceFinishEvent;
@@ -32,6 +33,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -405,7 +407,19 @@ public class URaceListener implements Listener {
 		plugin.gameScheduler.updateGame(game);
 	}
 	@EventHandler
+	void exploder(EntityExplodeEvent event){
+		if(event.getEntity().hasMetadata("explosion.none")){
+			Location loc = event.getEntity().getLocation();
+			event.setCancelled(true);
+			event.getEntity().remove();
+			loc.getWorld().createExplosion(loc, 0);
+			//TODO affect cars nearby
+		}
+	}
+	@EventHandler
 	void signClicker(PlayerInteractEvent event){
+		KartAction action = main.marioKart.calculate(event.getPlayer(), event);
+		//TODO execute basic on kartAction
 		if(event.getAction() != Action.RIGHT_CLICK_BLOCK){
 			return;
 		}
