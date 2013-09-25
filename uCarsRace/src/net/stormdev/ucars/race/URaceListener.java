@@ -23,7 +23,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
@@ -33,6 +36,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -41,6 +46,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.util.Vector;
 
 import com.useful.ucars.ucars;
 import com.useful.ucarsCommon.StatValue;
@@ -49,6 +55,20 @@ public class URaceListener implements Listener {
 	main plugin = null;
 	public URaceListener(main plugin){
 		this.plugin = plugin;
+	}
+	public void penalty(final Minecart car, long time){
+		if(car.hasMetadata("kart.immune")){
+			return;
+		}
+		double power = (time/2);
+		car.setMetadata("car.frozen", new StatValue(time, plugin));
+		car.setVelocity(new Vector(0,power,0));
+		plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable(){
+
+			public void run() {
+				car.removeMetadata("car.frozen", plugin);
+			}}, (time*20));
+		return;
 	}
 	@EventHandler
 	public void onWandClickEvent(PlayerInteractEvent event){
@@ -407,13 +427,59 @@ public class URaceListener implements Listener {
 		plugin.gameScheduler.updateGame(game);
 	}
 	@EventHandler
+	void damage(EntityDamageEvent event){
+		if(!(event.getEntityType() == EntityType.MINECART)){
+		    return;	
+		}
+		if(!(event.getCause() == DamageCause.ENTITY_EXPLOSION || event.getCause() == DamageCause.BLOCK_EXPLOSION)){
+			return;
+		}
+		if(!ucars.listener.isACar((Minecart) event.getEntity())){
+			return;
+		}
+		if(plugin.raceMethods.inAGame(((Player) event.getEntity().getPassenger()).getName()) == null && !(event.getEntity().hasMetadata("kart.immune"))){
+			return;
+		}
+		event.setDamage(0);
+		event.setCancelled(true);
+	}
+	@EventHandler
 	void exploder(EntityExplodeEvent event){
+		if(!main.config.getBoolean("mariokart.enable")){
+			return;
+		}
+		if(event.getEntity() == null){
+			return;
+		}
 		if(event.getEntity().hasMetadata("explosion.none")){
 			Location loc = event.getEntity().getLocation();
 			event.setCancelled(true);
 			event.getEntity().remove();
+			double radius = 6;
 			loc.getWorld().createExplosion(loc, 0);
-			//TODO affect cars nearby
+			Double x = (double) radius;
+			Double y = (double) radius;
+			Double z = (double) radius;
+			List<Entity> near = event.getEntity().getNearbyEntities(x, y, z);
+			
+			Object[] entarray = near.toArray();
+			
+				Entity listent;
+				
+				
+
+				for (Object s  : entarray)
+				{
+				    listent = (Entity) s;
+				    EntityType type = listent.getType();
+				    if(type == EntityType.MINECART){
+				    	if(ucars.listener.isACar((Minecart) listent)){
+				    		((Minecart) listent).setDamage(0);
+				    		penalty((Minecart) listent, 4);
+				    	}
+				    }
+				}
+				
 		}
 	}
 	@EventHandler

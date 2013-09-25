@@ -10,6 +10,7 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import com.useful.ucars.ItemStackFromId;
@@ -29,6 +30,9 @@ public class MarioKart {
 		if(!enabled){
 			return null;
 		}
+		if(plugin.raceMethods.inAGame(player.getName()) == null){
+			return null;
+		}
 		KartAction kartAction = new KartAction(false, false, Action.UNKNOWN, new Object[]{});
 		Boolean freeze = false;
 		Boolean destroy = false;
@@ -40,7 +44,7 @@ public class MarioKart {
 			if(!ucars.listener.inACar(evt.getPlayer())){
 				return null;
 			}
-			Minecart car = (Minecart) evt.getPlayer().getVehicle();
+			final Minecart car = (Minecart) evt.getPlayer().getVehicle();
 			if(evt.getAction()==org.bukkit.event.block.Action.RIGHT_CLICK_AIR || evt.getAction()==org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK){
 				//If green shell, throw forward
 			}
@@ -56,16 +60,16 @@ public class MarioKart {
 			}
 			else if(ItemStackFromId.equals(main.config.getString("mariokart.star"), inHand.getTypeId(), inHand.getDurability())){
 				inHand.setAmount(inHand.getAmount()-1);
-				ply.setMetadata("kart.immune", new StatValue(15000, main.plugin)); //Value = length(millis)
+				car.setMetadata("kart.immune", new StatValue(15000, main.plugin)); //Value = length(millis)
 				final String pname = ply.getName();
 				plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable(){
 
 					public void run() {
 						Player pl = main.plugin.getServer().getPlayer(pname);
 						if(pl!=null){
-							pl.removeMetadata("kart.immune", main.plugin);
+							car.removeMetadata("kart.immune", main.plugin);
 						}
-					}}, 300);
+					}}, 300l);
 				ucars.listener.carBoost(ply.getName(), 35, 15000, ucars.config.getDouble("general.cars.defSpeed")); //Apply speed boost
 			}
 			else if(ItemStackFromId.equals(main.config.getString("mariokart.mushroom"), inHand.getTypeId(), inHand.getDurability())){
@@ -74,13 +78,29 @@ public class MarioKart {
 			}
 			else if(ItemStackFromId.equals(main.config.getString("mariokart.bomb"), inHand.getTypeId(), inHand.getDurability())){
 				inHand.setAmount(inHand.getAmount()-1);
-				//TODO fire a bomb
-				Vector vel = ply.getEyeLocation().getDirection();
-				TNTPrimed tnt = (TNTPrimed) car.getLocation().getWorld().spawnEntity(car.getLocation(), EntityType.PRIMED_TNT);
+				final Vector vel = ply.getEyeLocation().getDirection();
+				final TNTPrimed tnt = (TNTPrimed) car.getLocation().getWorld().spawnEntity(car.getLocation(), EntityType.PRIMED_TNT);
 			    tnt.setFuseTicks(80);
 			    tnt.setMetadata("explosion.none", new StatValue(null, plugin));
+			    vel.setY(0.2); //Distance to throw it
 			    tnt.setVelocity(vel);
-			    
+			    final MoveableInt count = new MoveableInt(12);
+			    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable(){
+					public void run() {
+						if(count.getInt() > 0){
+							count.setInt(count.getInt()-1);
+							tnt.setVelocity(vel);
+							tnt.setMetadata("explosion.none", new StatValue(null, plugin));
+							try {
+								Thread.sleep(50);
+							} catch (InterruptedException e) {
+							}
+						}
+						else{
+							
+							return;
+						}
+					}});
 			}
 			evt.getPlayer().setItemInHand(inHand);
 			evt.getPlayer().updateInventory(); //Fix 1.6 bug with inventory not updating
