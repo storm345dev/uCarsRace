@@ -18,15 +18,16 @@ import net.stormdev.ucars.utils.RaceStartEvent;
 import net.stormdev.ucars.utils.RaceUpdateEvent;
 import net.stormdev.ucars.utils.TrackCreator;
 import net.stormdev.ucars.utils.ValueComparator;
+import net.stormdev.ucars.utils.shellUpdateEvent;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
@@ -48,6 +49,7 @@ import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.util.Vector;
 
+import com.useful.ucars.ucarUpdateEvent;
 import com.useful.ucars.ucars;
 import com.useful.ucarsCommon.StatValue;
 
@@ -87,6 +89,59 @@ public class URaceListener implements Listener {
 		}
 		creator.set(wand);
 		return;
+	}
+	@EventHandler (priority = EventPriority.LOW)
+	void powerups(ucarUpdateEvent event){
+		Player player = (Player) event.getVehicle().getPassenger();
+		if(plugin.raceMethods.inAGame(player.getName())==null){
+			return;
+		}
+	    KartAction action = main.marioKart.calculate(player, event);
+	    if(action == null){
+	    	return;
+	    }
+	    if(action.getAction()==net.stormdev.mariokartAddons.Action.UNKNOWN){
+	    	return;
+	    }
+	    //TODO perform action
+	    
+	}
+	@EventHandler (priority = EventPriority.LOWEST)
+	void trackingShells(shellUpdateEvent event){
+		//if target is null then green shell
+		Entity shell = event.getShell();
+		String targetName = event.getTarget();
+		if(targetName != null){
+			Player target = plugin.getServer().getPlayer(targetName);
+			Location targetLoc = target.getLocation();
+			Location shellLoc = shell.getLocation();
+			double x = targetLoc.getX()-shellLoc.getX();
+			double z = targetLoc.getZ()-shellLoc.getZ();
+			//TODO make biggest one = 0.2 while keeping direction the same
+			/*
+			Boolean ux = true;
+			if(x < z){
+				ux = false;
+			}
+			if(ux){
+				//x is smaller
+				double mult = z/0.2;
+				x = x/mult;
+				z = z/mult;
+			}
+			else{
+				//z is smaller
+				double mult = x/0.2;
+				x = x/mult;
+				z = z/mult;
+			}
+			*/
+			x = x*0.2;
+			z = z*0.2;
+			Vector vel = new Vector(x, 0, z);
+			shell.setVelocity(vel);
+		    return;
+		}
 	}
 	@EventHandler (priority = EventPriority.HIGHEST)
 	void RaceEnd(RaceEndEvent event){

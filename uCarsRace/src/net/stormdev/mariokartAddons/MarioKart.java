@@ -1,19 +1,30 @@
 package net.stormdev.mariokartAddons;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import net.stormdev.ucars.race.Race;
 import net.stormdev.ucars.race.main;
+import net.stormdev.ucars.utils.ItemStackFromId;
+import net.stormdev.ucars.utils.ValueComparator;
+import net.stormdev.ucars.utils.shellUpdateEvent;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.util.Vector;
 
-import com.useful.ucars.ItemStackFromId;
 import com.useful.ucars.ucarUpdateEvent;
 import com.useful.ucars.ucars;
 import com.useful.ucarsCommon.StatValue;
@@ -26,7 +37,7 @@ public class MarioKart {
 		enabled = main.config.getBoolean("mariokart.enable");
 	}
 	@SuppressWarnings("deprecation")
-	public KartAction calculate(Player player, Event event){
+	public KartAction calculate(final Player player, Event event){
 		if(!enabled){
 			return null;
 		}
@@ -75,6 +86,89 @@ public class MarioKart {
 			else if(ItemStackFromId.equals(main.config.getString("mariokart.mushroom"), inHand.getTypeId(), inHand.getDurability())){
 				inHand.setAmount(inHand.getAmount()-1);
 				ucars.listener.carBoost(ply.getName(), 19, 9000, ucars.config.getDouble("general.cars.defSpeed")); //Apply speed boost
+			}
+			else if(ItemStackFromId.equals(main.config.getString("mariokart.redShell"), inHand.getTypeId(), inHand.getDurability())){
+				//TODO auto tracking red shell
+				Race race = plugin.raceMethods.inAGame(player.getName());
+				if(race == null){
+					return null;
+				}
+				Map<String, Integer> scores = new HashMap<String, Integer>();
+				for(String pname:race.getPlayers()){
+					int laps = race.totalLaps - race.lapsLeft.get(pname) +1;
+					int checkpoints;
+					try {
+						checkpoints = race.checkpoints.get(pname);
+					} catch (Exception e) {
+						checkpoints = 0;
+					}
+					int score = (laps*race.getMaxCheckpoints()) + checkpoints;
+					try {
+						if(race.getWinner().equals(pname)){
+							score = score+1;
+						}
+					} catch (Exception e) {
+					}
+					scores.put(pname, score);
+				}
+				ValueComparator com = new ValueComparator(scores);
+		    	SortedMap<String, Integer> sorted = new TreeMap<String, Integer>(com);
+				sorted.putAll(scores);
+		    	Set<String> keys = sorted.keySet();
+				Object[] pls = (Object[]) keys.toArray();
+				int ppos = 0;
+				for(int i=0;i<pls.length;i++){
+					if(pls[i].equals(player.getName())){
+						ppos = i;
+					}
+				}
+				int tpos = ppos-1;
+				if(tpos < 0){
+					return null;
+				}
+				final String targetName = (String) pls[tpos];
+				inHand.setAmount(inHand.getAmount()-1);
+				ItemStack toDrop = ItemStackFromId.get(main.config.getString("mariokart.redShell"));
+				//final Item shell = player.getLocation().getWorld().dropItem(player.getLocation(), toDrop);
+				final Entity shell = player.getLocation().getWorld().spawnEntity(player.getLocation().add(0, 1.3, 0), EntityType.MINECART_CHEST);
+				//shell.setPickupDelay(20000);
+				shell.setMetadata("shell.target", new StatValue(targetName, plugin));
+				shell.setMetadata("shell.expiry", new StatValue(((Integer)200), plugin));
+				plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable(){
+
+					public void run() {
+						Boolean run = true;
+						while(run){
+						if(shell.hasMetadata("shell.destroy")){
+							shell.remove();
+							run = false;
+							return;
+						}
+						List<MetadataValue> metas = shell.getMetadata("shell.expiry");
+						int expiry = (Integer) ((StatValue) metas.get(0)).getValue();
+						expiry--;
+						if(expiry < 0){
+							shell.remove();
+							run = false;
+							return;
+						}
+						//shell.setPickupDelay(20000);
+						shell.removeMetadata("shell.expiry", main.plugin);
+						shell.setMetadata("shell.expiry", new StatValue(expiry, main.plugin));
+						main.plugin.getServer().getScheduler().runTask(main.plugin, new Runnable(){
+
+							public void run() {
+								shellUpdateEvent event = new shellUpdateEvent(shell, targetName);
+								main.plugin.getServer().getPluginManager().callEvent(event);
+							}});
+						try {
+							Thread.sleep(100);
+						} catch (InterruptedException e) {
+						}
+						}
+						return;
+					}});
+				//TODO track them
 			}
 			else if(ItemStackFromId.equals(main.config.getString("mariokart.bomb"), inHand.getTypeId(), inHand.getDurability())){
 				inHand.setAmount(inHand.getAmount()-1);
