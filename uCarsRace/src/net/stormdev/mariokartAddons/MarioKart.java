@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import net.stormdev.ucars.race.Race;
 import net.stormdev.ucars.race.main;
@@ -24,6 +25,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import com.useful.ucars.ucarUpdateEvent;
@@ -33,6 +35,7 @@ import com.useful.ucarsCommon.StatValue;
 public class MarioKart {
 	main plugin = null;
 	Boolean enabled = true;
+	private HashMap<UUID, BukkitTask> tasks = new HashMap<UUID, BukkitTask>();
 	public MarioKart(main plugin){
 		this.plugin = plugin;
 		enabled = main.config.getBoolean("mariokart.enable");
@@ -125,7 +128,10 @@ public class MarioKart {
 				}
 				int tpos = ppos-1;
 				if(tpos < 0){
+					tpos = ppos+1;
+					if(tpos < 0 || tpos >= pls.length){
 					return null;
+					}
 				}
 				final String targetName = (String) pls[tpos];
 				inHand.setAmount(inHand.getAmount()-1);
@@ -134,8 +140,8 @@ public class MarioKart {
 				//DEBUG: final Entity shell = player.getLocation().getWorld().spawnEntity(player.getLocation().add(0, 1.3, 0), EntityType.MINECART_CHEST);
 				shell.setPickupDelay(Integer.MAX_VALUE);
 				shell.setMetadata("shell.target", new StatValue(targetName, plugin));
-				shell.setMetadata("shell.expiry", new StatValue(((Integer)100), plugin));
-				plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable(){
+				shell.setMetadata("shell.expiry", new StatValue(((Integer)200), plugin));
+				BukkitTask task = plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable(){
 
 					public void run() {
 						Boolean run = true;
@@ -143,6 +149,8 @@ public class MarioKart {
 						if(shell.hasMetadata("shell.destroy")){
 							shell.remove();
 							run = false;
+							tasks.get(shell.getUniqueId()).cancel();
+							tasks.remove(shell.getUniqueId());
 							return;
 						}
 						List<MetadataValue> metas = shell.getMetadata("shell.expiry");
@@ -151,25 +159,25 @@ public class MarioKart {
 						if(expiry < 0){
 							shell.remove();
 							run = false;
+							tasks.get(shell.getUniqueId()).cancel();
+							tasks.remove(shell.getUniqueId());
 							return;
 						}
 						shell.setTicksLived(1);
 						shell.setPickupDelay(Integer.MAX_VALUE);
 						shell.removeMetadata("shell.expiry", main.plugin);
 						shell.setMetadata("shell.expiry", new StatValue(expiry, main.plugin));
-						main.plugin.getServer().getScheduler().runTask(main.plugin, new Runnable(){
-
-							public void run() {
-								shellUpdateEvent event = new shellUpdateEvent(shell, targetName);
-								main.plugin.getServer().getPluginManager().callEvent(event);
-							}});
+						shellUpdateEvent event = new shellUpdateEvent(shell, targetName);
+						main.plugin.getServer().getPluginManager().callEvent(event);
 						try {
-							Thread.sleep(50);
+							Thread.sleep(100);
 						} catch (InterruptedException e) {
 						}
 						}
 						return;
 					}});
+				this.tasks.put(shell.getUniqueId(), task);
+				return kartAction;
 				//TODO track them
 			}
 			else if(ItemStackFromId.equals(main.config.getString("mariokart.bomb"), inHand.getTypeId(), inHand.getDurability())){

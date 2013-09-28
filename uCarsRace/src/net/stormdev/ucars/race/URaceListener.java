@@ -105,63 +105,65 @@ public class URaceListener implements Listener {
 	    	return;
 	    }
 	    //TODO perform action
-	    
+	    return;
 	}
 	@EventHandler (priority = EventPriority.LOWEST)
-	void trackingShells(shellUpdateEvent event){
+	void trackingShells(final shellUpdateEvent event){
 		//if target is null then green shell
-		int sound = 0;
-		Entity shell = event.getShell();
-		Location shellLoc = shell.getLocation();
-        if(shell.hasMetadata("shell.sound")){
-			sound = (Integer) ((StatValue)shell.getMetadata("shell.sound").get(0)).getValue();
-		}
-        if(sound < 1){
-        	shellLoc.getWorld().playSound(shellLoc, Sound.NOTE_PLING, 1.25f, 1.25f);
-        	sound = 8;
-        	shell.removeMetadata("shell.sound", plugin);
-        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
-        }
-        else{
-        	sound--;
-        	shell.removeMetadata("shell.sound", plugin);
-        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
-        }
-		String targetName = event.getTarget();
-		if(targetName != null){
-			Player target = plugin.getServer().getPlayer(targetName);
-			Location targetLoc = target.getLocation();
-			double x = targetLoc.getX()-shellLoc.getX();
-			double z = targetLoc.getZ()-shellLoc.getZ();
-			double speed = 1.2;
-			Boolean ux = true;
-			double px = Math.abs(x);
-			double pz = Math.abs(z);
-			if(px > pz){
-				ux = false;
-			}
-			Vector vel = new Vector(x, 0, z);
-			if(ux){
-				//x is smaller
-				long mult = (long) (pz/speed);
-				vel = vel.divide(new Vector(mult,1,mult));
-			}
-			else{
-				//z is smaller
-				long mult = (long) (px/speed);
-				vel = vel.divide(new Vector(mult,1,mult));
-			}
-			shell.setVelocity(vel);
-			if(pz < 1.2 && px < 1.2){
-				String msg = main.msgs.get("mario.hit");
-				msg = msg.replaceAll(Pattern.quote("%name%"), "tracking shell");
-				target.getLocation().getWorld().playSound(target.getLocation(), Sound.ENDERDRAGON_HIT, 1, 0.8f);
-				target.sendMessage(ChatColor.RED+msg);
-				penalty(((Minecart)target.getVehicle()), 4);
-				shell.setMetadata("shell.destroy", new StatValue(null, plugin));
-			}
-		    return;
-		}
+				int sound = 0;
+				final Entity shell = event.getShell();
+				Location shellLoc = shell.getLocation();
+		        if(shell.hasMetadata("shell.sound")){
+					sound = (Integer) ((StatValue)shell.getMetadata("shell.sound").get(0)).getValue();
+				}
+		        if(sound < 1){
+		        	shellLoc.getWorld().playSound(shellLoc, Sound.NOTE_PLING, 1.25f, 1.25f);
+		        	sound = 8;
+		        	shell.removeMetadata("shell.sound", plugin);
+		        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
+		        }
+		        else{
+		        	sound--;
+		        	shell.removeMetadata("shell.sound", plugin);
+		        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
+		        }
+				String targetName = event.getTarget();
+				if(targetName != null){
+					final Player target = plugin.getServer().getPlayer(targetName);
+					Location targetLoc = target.getLocation();
+					double x = targetLoc.getX()-shellLoc.getX();
+					double z = targetLoc.getZ()-shellLoc.getZ();
+					double speed = 1.2;
+					Boolean ux = true;
+					double px = Math.abs(x);
+					double pz = Math.abs(z);
+					if(px > pz){
+						ux = false;
+					}
+					Vector vel = new Vector(x, 0, z);
+					if(ux){
+						//x is smaller
+						long mult = (long) (pz/speed);
+						vel = vel.divide(new Vector(mult,1,mult));
+					}
+					else{
+						//z is smaller
+						long mult = (long) (px/speed);
+						vel = vel.divide(new Vector(mult,1,mult));
+					}
+					shell.setVelocity(vel);
+					if(pz < 1.2 && px < 1.2){
+								String msg = main.msgs.get("mario.hit");
+								msg = msg.replaceAll(Pattern.quote("%name%"), "tracking shell");
+								target.getLocation().getWorld().playSound(target.getLocation(), Sound.ENDERDRAGON_HIT, 1, 0.8f);
+								target.sendMessage(ChatColor.RED+msg);
+								penalty(((Minecart)target.getVehicle()), 4);
+								shell.setMetadata("shell.destroy", new StatValue(0, plugin));
+								return;
+					}
+				    return;
+				}
+		return;
 	}
 	@EventHandler (priority = EventPriority.HIGHEST)
 	void RaceEnd(RaceEndEvent event){
