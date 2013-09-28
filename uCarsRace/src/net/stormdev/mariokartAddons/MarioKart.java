@@ -175,8 +175,6 @@ public class MarioKart {
 						}
 						return;
 					}});
-				return kartAction;
-				//TODO track them
 			}
 			else if(ItemStackFromId.equals(main.config.getString("mariokart.bomb"), inHand.getTypeId(), inHand.getDurability())){
 				inHand.setAmount(inHand.getAmount()-1);

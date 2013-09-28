@@ -91,7 +91,7 @@ public class URaceListener implements Listener {
 		creator.set(wand);
 		return;
 	}
-	@EventHandler (priority = EventPriority.LOW)
+	@EventHandler (priority = EventPriority.MONITOR)
 	void powerups(ucarUpdateEvent event){
 		Player player = (Player) event.getVehicle().getPassenger();
 		if(plugin.raceMethods.inAGame(player.getName())==null){
@@ -109,26 +109,27 @@ public class URaceListener implements Listener {
 	}
 	@EventHandler (priority = EventPriority.LOWEST)
 	void trackingShells(shellUpdateEvent event){
+		//TODO work out why causing crashes
 		//if target is null then green shell
-				int sound = 0;
-				final Entity shell = event.getShell();
-				Location shellLoc = shell.getLocation();
-		        if(shell.hasMetadata("shell.sound")){
-					sound = (Integer) ((StatValue)shell.getMetadata("shell.sound").get(0)).getValue();
-				}
-		        if(sound < 1){
-		        	shellLoc.getWorld().playSound(shellLoc, Sound.NOTE_PLING, 1.25f, 1.25f);
-		        	sound = 8;
-		        	shell.removeMetadata("shell.sound", plugin);
-		        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
-		        }
-		        else{
-		        	sound--;
-		        	shell.removeMetadata("shell.sound", plugin);
-		        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
-		        }
 				String targetName = event.getTarget();
 				if(targetName != null){
+					final Entity shell = event.getShell();
+					Location shellLoc = shell.getLocation();
+					int sound = 0;
+			        if(shell.hasMetadata("shell.sound")){
+						sound = (Integer) ((StatValue)shell.getMetadata("shell.sound").get(0)).getValue();
+					}
+			        if(sound < 1){
+			        	shellLoc.getWorld().playSound(shellLoc, Sound.NOTE_PLING, 1.25f, 1.25f);
+			        	sound = 8;
+			        	shell.removeMetadata("shell.sound", plugin);
+			        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
+			        }
+			        else{
+			        	sound--;
+			        	shell.removeMetadata("shell.sound", plugin);
+			        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
+			        }
 					final Player target = plugin.getServer().getPlayer(targetName);
 					Location targetLoc = target.getLocation();
 					double x = targetLoc.getX()-shellLoc.getX();
@@ -589,6 +590,7 @@ public class URaceListener implements Listener {
 		else if(cmd.equalsIgnoreCase("join")){
 			main.cmdExecutor.urace(event.getPlayer(), new String[]{"join", ChatColor.stripColor(lines[2]).toLowerCase()}, event.getPlayer());
 		}
+		return;
 	}
 	@EventHandler
 	void signWriter(SignChangeEvent event){
