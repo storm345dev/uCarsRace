@@ -35,7 +35,6 @@ import com.useful.ucarsCommon.StatValue;
 public class MarioKart {
 	main plugin = null;
 	Boolean enabled = true;
-	private HashMap<UUID, BukkitTask> tasks = new HashMap<UUID, BukkitTask>();
 	public MarioKart(main plugin){
 		this.plugin = plugin;
 		enabled = main.config.getBoolean("mariokart.enable");
@@ -140,8 +139,8 @@ public class MarioKart {
 				//DEBUG: final Entity shell = player.getLocation().getWorld().spawnEntity(player.getLocation().add(0, 1.3, 0), EntityType.MINECART_CHEST);
 				shell.setPickupDelay(Integer.MAX_VALUE);
 				shell.setMetadata("shell.target", new StatValue(targetName, plugin));
-				shell.setMetadata("shell.expiry", new StatValue(((Integer)200), plugin));
-				BukkitTask task = plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable(){
+				shell.setMetadata("shell.expiry", new StatValue(((Integer)50), plugin));
+				plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable(){
 
 					public void run() {
 						Boolean run = true;
@@ -149,8 +148,6 @@ public class MarioKart {
 						if(shell.hasMetadata("shell.destroy")){
 							shell.remove();
 							run = false;
-							tasks.get(shell.getUniqueId()).cancel();
-							tasks.remove(shell.getUniqueId());
 							return;
 						}
 						List<MetadataValue> metas = shell.getMetadata("shell.expiry");
@@ -159,8 +156,6 @@ public class MarioKart {
 						if(expiry < 0){
 							shell.remove();
 							run = false;
-							tasks.get(shell.getUniqueId()).cancel();
-							tasks.remove(shell.getUniqueId());
 							return;
 						}
 						shell.setTicksLived(1);
@@ -176,7 +171,6 @@ public class MarioKart {
 						}
 						return;
 					}});
-				this.tasks.put(shell.getUniqueId(), task);
 				return kartAction;
 				//TODO track them
 			}

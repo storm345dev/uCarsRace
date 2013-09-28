@@ -108,7 +108,7 @@ public class URaceListener implements Listener {
 	    return;
 	}
 	@EventHandler (priority = EventPriority.LOWEST)
-	void trackingShells(final shellUpdateEvent event){
+	void trackingShells(shellUpdateEvent event){
 		//if target is null then green shell
 				int sound = 0;
 				final Entity shell = event.getShell();
@@ -152,7 +152,7 @@ public class URaceListener implements Listener {
 						vel = vel.divide(new Vector(mult,1,mult));
 					}
 					shell.setVelocity(vel);
-					if(pz < 1.2 && px < 1.2){
+					if(pz < 1 && px < 1){
 								String msg = main.msgs.get("mario.hit");
 								msg = msg.replaceAll(Pattern.quote("%name%"), "tracking shell");
 								target.getLocation().getWorld().playSound(target.getLocation(), Sound.ENDERDRAGON_HIT, 1, 0.8f);
