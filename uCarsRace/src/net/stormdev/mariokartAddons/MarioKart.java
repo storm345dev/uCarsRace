@@ -162,8 +162,12 @@ public class MarioKart {
 						shell.setPickupDelay(Integer.MAX_VALUE);
 						shell.removeMetadata("shell.expiry", main.plugin);
 						shell.setMetadata("shell.expiry", new StatValue(expiry, main.plugin));
-						shellUpdateEvent event = new shellUpdateEvent(shell, targetName);
-						main.plugin.getServer().getPluginManager().callEvent(event);
+						main.plugin.getServer().getScheduler().runTask(plugin, new Runnable(){
+
+							public void run() {
+								shellUpdateEvent event = new shellUpdateEvent(shell, targetName);
+								main.plugin.getServer().getPluginManager().callEvent(event);
+							}});
 						try {
 							Thread.sleep(100);
 						} catch (InterruptedException e) {
