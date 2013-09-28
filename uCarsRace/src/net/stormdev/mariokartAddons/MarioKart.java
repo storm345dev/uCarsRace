@@ -13,6 +13,7 @@ import net.stormdev.ucars.utils.ItemStackFromId;
 import net.stormdev.ucars.utils.ValueComparator;
 import net.stormdev.ucars.utils.shellUpdateEvent;
 
+import org.bukkit.entity.Bat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -129,11 +130,11 @@ public class MarioKart {
 				final String targetName = (String) pls[tpos];
 				inHand.setAmount(inHand.getAmount()-1);
 				ItemStack toDrop = ItemStackFromId.get(main.config.getString("mariokart.redShell"));
-				//final Item shell = player.getLocation().getWorld().dropItem(player.getLocation(), toDrop);
-				final Entity shell = player.getLocation().getWorld().spawnEntity(player.getLocation().add(0, 1.3, 0), EntityType.MINECART_CHEST);
-				//shell.setPickupDelay(20000);
+				final Item shell = player.getLocation().getWorld().dropItem(player.getLocation(), toDrop);
+				//DEBUG: final Entity shell = player.getLocation().getWorld().spawnEntity(player.getLocation().add(0, 1.3, 0), EntityType.MINECART_CHEST);
+				shell.setPickupDelay(Integer.MAX_VALUE);
 				shell.setMetadata("shell.target", new StatValue(targetName, plugin));
-				shell.setMetadata("shell.expiry", new StatValue(((Integer)200), plugin));
+				shell.setMetadata("shell.expiry", new StatValue(((Integer)100), plugin));
 				plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable(){
 
 					public void run() {
@@ -152,7 +153,8 @@ public class MarioKart {
 							run = false;
 							return;
 						}
-						//shell.setPickupDelay(20000);
+						shell.setTicksLived(1);
+						shell.setPickupDelay(Integer.MAX_VALUE);
 						shell.removeMetadata("shell.expiry", main.plugin);
 						shell.setMetadata("shell.expiry", new StatValue(expiry, main.plugin));
 						main.plugin.getServer().getScheduler().runTask(main.plugin, new Runnable(){
@@ -162,7 +164,7 @@ public class MarioKart {
 								main.plugin.getServer().getPluginManager().callEvent(event);
 							}});
 						try {
-							Thread.sleep(100);
+							Thread.sleep(50);
 						} catch (InterruptedException e) {
 						}
 						}
@@ -191,7 +193,6 @@ public class MarioKart {
 							}
 						}
 						else{
-							
 							return;
 						}
 					}});

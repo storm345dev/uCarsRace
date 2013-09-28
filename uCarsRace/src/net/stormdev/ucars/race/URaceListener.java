@@ -10,6 +10,7 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import net.stormdev.mariokartAddons.KartAction;
+import net.stormdev.mariokartAddons.Powerup;
 import net.stormdev.ucars.utils.CheckpointCheck;
 import net.stormdev.ucars.utils.RaceEndEvent;
 import net.stormdev.ucars.utils.RaceFinishEvent;
@@ -20,10 +21,10 @@ import net.stormdev.ucars.utils.TrackCreator;
 import net.stormdev.ucars.utils.ValueComparator;
 import net.stormdev.ucars.utils.shellUpdateEvent;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -109,37 +110,56 @@ public class URaceListener implements Listener {
 	@EventHandler (priority = EventPriority.LOWEST)
 	void trackingShells(shellUpdateEvent event){
 		//if target is null then green shell
+		int sound = 0;
 		Entity shell = event.getShell();
+		Location shellLoc = shell.getLocation();
+        if(shell.hasMetadata("shell.sound")){
+			sound = (Integer) ((StatValue)shell.getMetadata("shell.sound").get(0)).getValue();
+		}
+        if(sound < 1){
+        	shellLoc.getWorld().playSound(shellLoc, Sound.NOTE_PLING, 1.25f, 1.25f);
+        	sound = 8;
+        	shell.removeMetadata("shell.sound", plugin);
+        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
+        }
+        else{
+        	sound--;
+        	shell.removeMetadata("shell.sound", plugin);
+        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
+        }
 		String targetName = event.getTarget();
 		if(targetName != null){
 			Player target = plugin.getServer().getPlayer(targetName);
 			Location targetLoc = target.getLocation();
-			Location shellLoc = shell.getLocation();
 			double x = targetLoc.getX()-shellLoc.getX();
 			double z = targetLoc.getZ()-shellLoc.getZ();
-			//TODO make biggest one = 0.2 while keeping direction the same
-			/*
+			double speed = 1.2;
 			Boolean ux = true;
-			if(x < z){
+			double px = Math.abs(x);
+			double pz = Math.abs(z);
+			if(px > pz){
 				ux = false;
 			}
+			Vector vel = new Vector(x, 0, z);
 			if(ux){
 				//x is smaller
-				double mult = z/0.2;
-				x = x/mult;
-				z = z/mult;
+				long mult = (long) (pz/speed);
+				vel = vel.divide(new Vector(mult,1,mult));
 			}
 			else{
 				//z is smaller
-				double mult = x/0.2;
-				x = x/mult;
-				z = z/mult;
+				long mult = (long) (px/speed);
+				vel = vel.divide(new Vector(mult,1,mult));
 			}
-			*/
-			x = x*0.2;
-			z = z*0.2;
-			Vector vel = new Vector(x, 0, z);
 			shell.setVelocity(vel);
+			if(pz < 1.2 && px < 1.2){
+				String msg = main.msgs.get("mario.hit");
+				msg = msg.replaceAll(Pattern.quote("%name%"), "tracking shell");
+				target.getLocation().getWorld().playSound(target.getLocation(), Sound.ENDERDRAGON_HIT, 1, 0.8f);
+				target.sendMessage(ChatColor.RED+msg);
+				penalty(((Minecart)target.getVehicle()), 4);
+				shell.setMetadata("shell.destroy", new StatValue(null, plugin));
+			}
 		    return;
 		}
 	}

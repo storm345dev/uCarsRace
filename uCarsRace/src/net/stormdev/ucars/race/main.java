@@ -182,6 +182,9 @@ public class main extends JavaPlugin {
         	if(!lang.contains("race.end.position")){
         		lang.set("race.end.position", "You finished %position%!");
         	}
+        	if(!lang.contains("mario.hit")){
+        		lang.set("mario.hit", "You were hit by a %name%!");
+        	}
         	//Setup the config
         	if (!config.contains("setup.create.wand")) {
 				config.set("setup.create.wand", 280);
