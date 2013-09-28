@@ -115,12 +115,13 @@ public class URaceListener implements Listener {
 				if(targetName != null){
 					final Entity shell = event.getShell();
 					Location shellLoc = shell.getLocation();
+					/*
 					int sound = 0;
 			        if(shell.hasMetadata("shell.sound")){
 						sound = (Integer) ((StatValue)shell.getMetadata("shell.sound").get(0)).getValue();
 					}
 			        if(sound < 1){
-			        	shellLoc.getWorld().playSound(shellLoc, Sound.NOTE_PLING, 1.25f, 1.25f);
+			        	//shellLoc.getWorld().playSound(shellLoc, Sound.NOTE_PLING, 1.25f, 1.25f);
 			        	sound = 8;
 			        	shell.removeMetadata("shell.sound", plugin);
 			        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
@@ -130,18 +131,21 @@ public class URaceListener implements Listener {
 			        	shell.removeMetadata("shell.sound", plugin);
 			        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
 			        }
+			        */
 					final Player target = plugin.getServer().getPlayer(targetName);
 					Location targetLoc = target.getLocation();
 					double x = targetLoc.getX()-shellLoc.getX();
 					double z = targetLoc.getZ()-shellLoc.getZ();
 					double speed = 1.2;
+					Vector vel = new Vector(x, 0, z);
 					Boolean ux = true;
+					//TODO reduce calculations to avoid crash
 					double px = Math.abs(x);
 					double pz = Math.abs(z);
 					if(px > pz){
 						ux = false;
 					}
-					Vector vel = new Vector(x, 0, z);
+					
 					if(ux){
 						//x is smaller
 						long mult = (long) (pz/speed);
@@ -153,6 +157,7 @@ public class URaceListener implements Listener {
 						vel = vel.divide(new Vector(mult,1,mult));
 					}
 					shell.setVelocity(vel);
+					/*
 					if(pz < 1 && px < 1){
 								String msg = main.msgs.get("mario.hit");
 								msg = msg.replaceAll(Pattern.quote("%name%"), "tracking shell");
@@ -162,6 +167,7 @@ public class URaceListener implements Listener {
 								shell.setMetadata("shell.destroy", new StatValue(0, plugin));
 								return;
 					}
+					*/
 				    return;
 				}
 		return;
@@ -673,6 +679,7 @@ public class URaceListener implements Listener {
 
 			public void run() {
 				player.teleport(loc);
+				return;
 			}});
 		Minecart cart = (Minecart) loc.getWorld().spawnEntity(loc, EntityType.MINECART);
 	    cart.setPassenger(player);

@@ -34,6 +34,7 @@ import com.useful.ucarsCommon.StatValue;
 
 public class MarioKart {
 	main plugin = null;
+	private HashMap<UUID, BukkitTask> tasks = new HashMap<UUID, BukkitTask>();
 	Boolean enabled = true;
 	public MarioKart(main plugin){
 		this.plugin = plugin;
@@ -139,15 +140,14 @@ public class MarioKart {
 				//DEBUG: final Entity shell = player.getLocation().getWorld().spawnEntity(player.getLocation().add(0, 1.3, 0), EntityType.MINECART_CHEST);
 				shell.setPickupDelay(Integer.MAX_VALUE);
 				shell.setMetadata("shell.target", new StatValue(targetName, plugin));
-				shell.setMetadata("shell.expiry", new StatValue(((Integer)50), plugin));
-				plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable(){
+				shell.setMetadata("shell.expiry", new StatValue(((Integer)33), plugin));
+				BukkitTask task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable(){
 
 					public void run() {
-						Boolean run = true;
-						while(run){
 						if(shell.hasMetadata("shell.destroy")){
 							shell.remove();
-							run = false;
+							tasks.get(shell.getUniqueId()).cancel();
+							tasks.remove(shell.getUniqueId());
 							return;
 						}
 						List<MetadataValue> metas = shell.getMetadata("shell.expiry");
@@ -155,26 +155,19 @@ public class MarioKart {
 						expiry--;
 						if(expiry < 0){
 							shell.remove();
-							run = false;
+							tasks.get(shell.getUniqueId()).cancel();
+							tasks.remove(shell.getUniqueId());
 							return;
 						}
 						shell.setTicksLived(1);
 						shell.setPickupDelay(Integer.MAX_VALUE);
 						shell.removeMetadata("shell.expiry", main.plugin);
 						shell.setMetadata("shell.expiry", new StatValue(expiry, main.plugin));
-						main.plugin.getServer().getScheduler().runTask(plugin, new Runnable(){
-
-							public void run() {
-								shellUpdateEvent event = new shellUpdateEvent(shell, targetName);
-								main.plugin.getServer().getPluginManager().callEvent(event);
-							}});
-						try {
-							Thread.sleep(100);
-						} catch (InterruptedException e) {
-						}
-						}
+						shellUpdateEvent event = new shellUpdateEvent(shell, targetName);
+					    main.plugin.getServer().getPluginManager().callEvent(event);
 						return;
-					}});
+					}}, 3l, 3l);
+				tasks.put(shell.getUniqueId(), task);
 			}
 			else if(ItemStackFromId.equals(main.config.getString("mariokart.bomb"), inHand.getTypeId(), inHand.getDurability())){
 				inHand.setAmount(inHand.getAmount()-1);
