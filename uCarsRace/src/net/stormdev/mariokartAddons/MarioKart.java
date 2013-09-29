@@ -310,6 +310,50 @@ public class MarioKart {
 				}
 				inHand.setAmount(inHand.getAmount()-1);
 			}
+			else if(ItemStackFromId.equals(main.config.getString("mariokart.pow"), inHand.getTypeId(), inHand.getDurability())){
+				Race race = plugin.raceMethods.inAGame(player.getName());
+				if(race == null){
+					return null;
+				}
+				Map<String, Integer> scores = new HashMap<String, Integer>();
+				for(String pname:race.getPlayers()){
+					int laps = race.totalLaps - race.lapsLeft.get(pname) +1;
+					int checkpoints;
+					try {
+						checkpoints = race.checkpoints.get(pname);
+					} catch (Exception e) {
+						checkpoints = 0;
+					}
+					int score = (laps*race.getMaxCheckpoints()) + checkpoints;
+					try {
+						if(race.getWinner().equals(pname)){
+							score = score+1;
+						}
+					} catch (Exception e) {
+					}
+					scores.put(pname, score);
+				}
+				ValueComparator com = new ValueComparator(scores);
+		    	SortedMap<String, Integer> sorted = new TreeMap<String, Integer>(com);
+				sorted.putAll(scores);
+		    	Set<String> keys = sorted.keySet();
+				Object[] pls = (Object[]) keys.toArray();
+				int ppos = 0;
+				for(int i=0;i<pls.length;i++){
+					if(pls[i].equals(player.getName())){
+						ppos = i;
+					}
+				}
+				for(int i=0;i<pls.length && i<ppos;i++){
+					Player pl = plugin.getServer().getPlayer((String) pls[i]);
+					if(pl.getVehicle() != null){
+					if(pl.getVehicle() instanceof Minecart){
+						main.listener.penalty((Minecart) pl.getVehicle(), 2);
+					}
+					}
+				}
+				inHand.setAmount(inHand.getAmount()-1);
+			}
 			evt.getPlayer().setItemInHand(inHand);
 			evt.getPlayer().updateInventory(); //Fix 1.6 bug with inventory not updating
 		}

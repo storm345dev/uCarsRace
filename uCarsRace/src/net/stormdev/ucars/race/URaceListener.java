@@ -50,6 +50,7 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
@@ -85,6 +86,10 @@ public class URaceListener implements Listener {
 				car.removeMetadata("car.frozen", plugin);
 			}}, (time*20));
 		return;
+	}
+	@EventHandler
+	void bananas(PlayerPickupItemEvent event){
+		//TODO If banana, and race, penalty!
 	}
 	@EventHandler
 	public void onWandClickEvent(PlayerInteractEvent event){
