@@ -37,6 +37,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -69,6 +70,7 @@ public class URaceListener implements Listener {
 		plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable(){
 
 			public void run() {
+				car.getLocation().getWorld().playSound(car.getLocation(), Sound.WOOD_CLICK, 1f, 1f);
 				car.removeMetadata("car.frozen", plugin);
 			}}, (time*20));
 		return;
@@ -120,8 +122,8 @@ public class URaceListener implements Listener {
 						sound = (Integer) ((StatValue)shell.getMetadata("shell.sound").get(0)).getValue();
 					}
 			        if(sound < 1){
-			        	shellLoc.getWorld().playSound(shellLoc, Sound.NOTE_PLING, 1.25f, 1.25f);
-			        	sound = 8;
+			        	shellLoc.getWorld().playSound(shellLoc, Sound.NOTE_PLING, 1.25f, 1.8f);
+			        	sound = 4;
 			        	shell.removeMetadata("shell.sound", plugin);
 			        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
 			        }
@@ -686,6 +688,15 @@ public class URaceListener implements Listener {
 	}
 	@EventHandler
 	void blockBreak(BlockBreakEvent event){
+	    Player player = event.getPlayer();
+	    if(plugin.raceMethods.inAGame(player.getName()) == null){
+			return;
+		}
+	    event.setCancelled(true);
+	    return;
+	}
+	@EventHandler
+	void blockPlace(BlockPlaceEvent event){
 	    Player player = event.getPlayer();
 	    if(plugin.raceMethods.inAGame(player.getName()) == null){
 			return;
