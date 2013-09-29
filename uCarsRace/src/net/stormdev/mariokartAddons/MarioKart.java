@@ -27,6 +27,7 @@ import org.bukkit.entity.Bat;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
@@ -71,8 +72,74 @@ public class MarioKart {
 				return null;
 			}
 			final Minecart car = (Minecart) evt.getPlayer().getVehicle();
-			if(evt.getAction()==org.bukkit.event.block.Action.RIGHT_CLICK_AIR || evt.getAction()==org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK){
+			if(evt.getAction()==org.bukkit.event.block.Action.LEFT_CLICK_AIR || evt.getAction()==org.bukkit.event.block.Action.LEFT_CLICK_BLOCK){
+				ItemStack inHand = evt.getPlayer().getItemInHand();
 				//If green shell, throw forward
+				if(ItemStackFromId.equals(main.config.getString("mariokart.greenShell"), inHand.getTypeId(), inHand.getDurability())){
+					Race race = plugin.raceMethods.inAGame(player.getName());
+					if(race == null){
+						return null;
+					}
+					inHand.setAmount(inHand.getAmount()-1);
+					Location loc = player.getLocation().getBlock().getRelative(ClosestFace.getClosestFace(car.getLocation().getYaw()), 4).getLocation();
+					ItemStack toDrop = ItemStackFromId.get(main.config.getString("mariokart.greenShell"));
+					final Item shell = player.getLocation().getWorld().dropItem(loc, toDrop);
+					//final FallingBlock shell = (FallingBlock) player.getLocation().getWorld().spawnFallingBlock(loc.add(0, 1.4, 0), Material.WOOL, (byte) 13);
+					//shell.setPickupDelay(Integer.MAX_VALUE);
+					shell.setMetadata("shell.target", new StatValue(null, plugin));
+					shell.setMetadata("shell.expiry", new StatValue(((Integer)50), plugin));
+					BukkitTask task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable(){
+
+						public void run() {
+							if(shell.hasMetadata("shell.destroy")){
+								shell.remove();
+								tasks.get(shell.getUniqueId()).cancel();
+								tasks.remove(shell.getUniqueId());
+								return;
+							}
+							List<MetadataValue> metas = shell.getMetadata("shell.expiry");
+							int expiry = (Integer) ((StatValue) metas.get(0)).getValue();
+							expiry--;
+							if(expiry < 0){
+								shell.remove();
+								tasks.get(shell.getUniqueId()).cancel();
+								tasks.remove(shell.getUniqueId());
+								return;
+							}
+							shell.setTicksLived(1);
+							//shell.setPickupDelay(Integer.MAX_VALUE);
+							shell.removeMetadata("shell.expiry", main.plugin);
+							shell.setMetadata("shell.expiry", new StatValue(expiry, main.plugin));
+							Vector direction = player.getEyeLocation().getDirection();
+							double speed = 1.2;
+							Boolean ux = true;
+							double x = direction.getX();
+							double z = direction.getZ();
+							double px = Math.abs(x);
+							double pz = Math.abs(z);
+							if(px > pz){
+								ux = false;
+							}
+							
+							if(ux){
+								//x is smaller
+								//long mult = (long) (pz/speed);
+								x = (x/pz)*speed;
+								z = (z/pz)*speed;
+							}
+							else{
+								//z is smaller
+								//long mult = (long) (px/speed);
+								x = (x/px)*speed;
+								z = (z/px)*speed;
+							}
+							Vector vel = new Vector(x, 0, z);
+							shellUpdateEvent event = new shellUpdateEvent(shell, null, vel);
+						    main.plugin.getServer().getPluginManager().callEvent(event);
+							return;
+						}}, 1l, 1l);
+					tasks.put(shell.getUniqueId(), task);
+				}
 			}
 			if(!(evt.getAction()==org.bukkit.event.block.Action.RIGHT_CLICK_AIR || evt.getAction()==org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK)){
 				return null;
@@ -173,7 +240,7 @@ public class MarioKart {
 						shell.setPickupDelay(Integer.MAX_VALUE);
 						shell.removeMetadata("shell.expiry", main.plugin);
 						shell.setMetadata("shell.expiry", new StatValue(expiry, main.plugin));
-						shellUpdateEvent event = new shellUpdateEvent(shell, targetName);
+						shellUpdateEvent event = new shellUpdateEvent(shell, targetName, null);
 					    main.plugin.getServer().getPluginManager().callEvent(event);
 						return;
 					}}, 3l, 3l);
@@ -237,7 +304,7 @@ public class MarioKart {
 						shell.setPickupDelay(Integer.MAX_VALUE);
 						shell.removeMetadata("shell.expiry", main.plugin);
 						shell.setMetadata("shell.expiry", new StatValue(expiry, main.plugin));
-						shellUpdateEvent event = new shellUpdateEvent(shell, targetName);
+						shellUpdateEvent event = new shellUpdateEvent(shell, targetName, null);
 					    main.plugin.getServer().getPluginManager().callEvent(event);
 						return;
 					}}, 3l, 3l);
@@ -250,7 +317,8 @@ public class MarioKart {
 				}
 				inHand.setAmount(inHand.getAmount()-1);
 				ItemStack toDrop = ItemStackFromId.get(main.config.getString("mariokart.greenShell"));
-				final Item shell = player.getLocation().getWorld().dropItem(player.getLocation(), toDrop);
+				Location loc = player.getLocation().getBlock().getRelative(ClosestFace.getClosestFace(car.getLocation().getYaw()), -4).getLocation();
+				final Item shell = player.getLocation().getWorld().dropItem(loc, toDrop);
 				//DEBUG: final Entity shell = player.getLocation().getWorld().spawnEntity(player.getLocation().add(0, 1.3, 0), EntityType.MINECART_CHEST);
 				shell.setPickupDelay(Integer.MAX_VALUE);
 				shell.setMetadata("shell.target", new StatValue(null, plugin));
@@ -277,7 +345,31 @@ public class MarioKart {
 						shell.setPickupDelay(Integer.MAX_VALUE);
 						shell.removeMetadata("shell.expiry", main.plugin);
 						shell.setMetadata("shell.expiry", new StatValue(expiry, main.plugin));
-						shellUpdateEvent event = new shellUpdateEvent(shell, null);
+						Vector direction = player.getEyeLocation().getDirection();
+						double speed = 1.2;
+						Boolean ux = true;
+						double x = direction.getX();
+						double z = direction.getZ();
+						double px = Math.abs(x);
+						double pz = Math.abs(z);
+						if(px > pz){
+							ux = false;
+						}
+						
+						if(ux){
+							//x is smaller
+							//long mult = (long) (pz/speed);
+							x = (x/pz)*speed;
+							z = (z/pz)*speed;
+						}
+						else{
+							//z is smaller
+							//long mult = (long) (px/speed);
+							x = (x/px)*speed;
+							z = (z/px)*speed;
+						}
+						Vector vel = new Vector(-x, 0, -z);
+						shellUpdateEvent event = new shellUpdateEvent(shell, null, vel);
 					    main.plugin.getServer().getPluginManager().callEvent(event);
 						return;
 					}}, 3l, 3l);

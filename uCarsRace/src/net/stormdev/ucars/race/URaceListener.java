@@ -143,12 +143,10 @@ public class URaceListener implements Listener {
 	    if(action.getAction()==net.stormdev.mariokartAddons.Action.UNKNOWN){
 	    	return;
 	    }
-	    //TODO perform action
 	    return;
 	}
 	@EventHandler (priority = EventPriority.LOWEST)
 	void trackingShells(shellUpdateEvent event){
-		//TODO work out why causing crashes
 		//if target is null then green shell
 		final Entity shell = event.getShell();
 		Location shellLoc = shell.getLocation();
@@ -207,8 +205,30 @@ public class URaceListener implements Listener {
 				    return;
 				}
 				else{
-					
-					
+					speed = 1.5;
+					Vector direction = event.direction;
+					if(shellLoc.getBlock().getType() != Material.AIR && shellLoc.getBlock().getType() != Material.CARPET){
+						//Bounce
+						direction = direction.multiply(-1);
+					}
+					shell.setVelocity(direction);
+					if(shell.getNearbyEntities(2, 2, 2).size() > 0){
+						List<Entity> nearby = shell.getNearbyEntities(2, 2, 2);
+						for(Entity entity:nearby){
+							if(entity instanceof Player){
+								Player pl = (Player) entity;
+								if(ucars.listener.inACar(pl)){
+								String msg = main.msgs.get("mario.hit");
+								msg = msg.replaceAll(Pattern.quote("%name%"), "green shell");
+								pl.getLocation().getWorld().playSound(pl.getLocation(), Sound.ENDERDRAGON_HIT, 1, 0.8f);
+								pl.sendMessage(ChatColor.RED+msg);
+								penalty(((Minecart)pl.getVehicle()), 4);
+								shell.setMetadata("shell.destroy", new StatValue(0, plugin));
+								}
+								return;
+							}
+						}
+					}
 				}
 				
 		return;
