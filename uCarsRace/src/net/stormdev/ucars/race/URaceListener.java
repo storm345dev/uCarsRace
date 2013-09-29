@@ -115,13 +115,12 @@ public class URaceListener implements Listener {
 				if(targetName != null){
 					final Entity shell = event.getShell();
 					Location shellLoc = shell.getLocation();
-					/*
 					int sound = 0;
 			        if(shell.hasMetadata("shell.sound")){
 						sound = (Integer) ((StatValue)shell.getMetadata("shell.sound").get(0)).getValue();
 					}
 			        if(sound < 1){
-			        	//shellLoc.getWorld().playSound(shellLoc, Sound.NOTE_PLING, 1.25f, 1.25f);
+			        	shellLoc.getWorld().playSound(shellLoc, Sound.NOTE_PLING, 1.25f, 1.25f);
 			        	sound = 8;
 			        	shell.removeMetadata("shell.sound", plugin);
 			        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
@@ -131,13 +130,11 @@ public class URaceListener implements Listener {
 			        	shell.removeMetadata("shell.sound", plugin);
 			        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
 			        }
-			        */
 					final Player target = plugin.getServer().getPlayer(targetName);
 					Location targetLoc = target.getLocation();
 					double x = targetLoc.getX()-shellLoc.getX();
 					double z = targetLoc.getZ()-shellLoc.getZ();
 					double speed = 1.2;
-					Vector vel = new Vector(x, 0, z);
 					Boolean ux = true;
 					//TODO reduce calculations to avoid crash
 					double px = Math.abs(x);
@@ -148,16 +145,18 @@ public class URaceListener implements Listener {
 					
 					if(ux){
 						//x is smaller
-						long mult = (long) (pz/speed);
-						vel = vel.divide(new Vector(mult,1,mult));
+						//long mult = (long) (pz/speed);
+						x = (x/pz)*speed;
+						z = (z/pz)*speed;
 					}
 					else{
 						//z is smaller
-						long mult = (long) (px/speed);
-						vel = vel.divide(new Vector(mult,1,mult));
+						//long mult = (long) (px/speed);
+						x = (x/px)*speed;
+						z = (z/px)*speed;
 					}
+					Vector vel = new Vector(x, 0, z);
 					shell.setVelocity(vel);
-					/*
 					if(pz < 1 && px < 1){
 								String msg = main.msgs.get("mario.hit");
 								msg = msg.replaceAll(Pattern.quote("%name%"), "tracking shell");
@@ -167,7 +166,6 @@ public class URaceListener implements Listener {
 								shell.setMetadata("shell.destroy", new StatValue(0, plugin));
 								return;
 					}
-					*/
 				    return;
 				}
 		return;
