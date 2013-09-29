@@ -150,32 +150,31 @@ public class URaceListener implements Listener {
 	void trackingShells(shellUpdateEvent event){
 		//TODO work out why causing crashes
 		//if target is null then green shell
+		final Entity shell = event.getShell();
+		Location shellLoc = shell.getLocation();
+		int sound = 0;
+        if(shell.hasMetadata("shell.sound")){
+			sound = (Integer) ((StatValue)shell.getMetadata("shell.sound").get(0)).getValue();
+		}
+        if(sound < 1){
+        	shellLoc.getWorld().playSound(shellLoc, Sound.NOTE_PLING, 1.25f, 1.8f);
+        	sound = 3;
+        	shell.removeMetadata("shell.sound", plugin);
+        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
+        }
+        else{
+        	sound--;
+        	shell.removeMetadata("shell.sound", plugin);
+        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
+        }
+		double speed = 1.2;
 				String targetName = event.getTarget();
 				if(targetName != null){
-					final Entity shell = event.getShell();
-					Location shellLoc = shell.getLocation();
-					int sound = 0;
-			        if(shell.hasMetadata("shell.sound")){
-						sound = (Integer) ((StatValue)shell.getMetadata("shell.sound").get(0)).getValue();
-					}
-			        if(sound < 1){
-			        	shellLoc.getWorld().playSound(shellLoc, Sound.NOTE_PLING, 1.25f, 1.8f);
-			        	sound = 4;
-			        	shell.removeMetadata("shell.sound", plugin);
-			        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
-			        }
-			        else{
-			        	sound--;
-			        	shell.removeMetadata("shell.sound", plugin);
-			        	shell.setMetadata("shell.sound", new StatValue(sound, plugin));
-			        }
 					final Player target = plugin.getServer().getPlayer(targetName);
 					Location targetLoc = target.getLocation();
 					double x = targetLoc.getX()-shellLoc.getX();
 					double z = targetLoc.getZ()-shellLoc.getZ();
-					double speed = 1.2;
 					Boolean ux = true;
-					//TODO reduce calculations to avoid crash
 					double px = Math.abs(x);
 					double pz = Math.abs(z);
 					if(px > pz){
@@ -207,6 +206,11 @@ public class URaceListener implements Listener {
 					}
 				    return;
 				}
+				else{
+					
+					
+				}
+				
 		return;
 	}
 	@EventHandler (priority = EventPriority.HIGHEST)

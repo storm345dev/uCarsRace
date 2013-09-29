@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import net.stormdev.ucars.race.Race;
 import net.stormdev.ucars.race.main;
@@ -18,6 +19,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
@@ -241,6 +243,46 @@ public class MarioKart {
 					}}, 3l, 3l);
 				tasks.put(shell.getUniqueId(), task);
 			}
+			else if(ItemStackFromId.equals(main.config.getString("mariokart.greenShell"), inHand.getTypeId(), inHand.getDurability())){
+				Race race = plugin.raceMethods.inAGame(player.getName());
+				if(race == null){
+					return null;
+				}
+				inHand.setAmount(inHand.getAmount()-1);
+				ItemStack toDrop = ItemStackFromId.get(main.config.getString("mariokart.greenShell"));
+				final Item shell = player.getLocation().getWorld().dropItem(player.getLocation(), toDrop);
+				//DEBUG: final Entity shell = player.getLocation().getWorld().spawnEntity(player.getLocation().add(0, 1.3, 0), EntityType.MINECART_CHEST);
+				shell.setPickupDelay(Integer.MAX_VALUE);
+				shell.setMetadata("shell.target", new StatValue(null, plugin));
+				shell.setMetadata("shell.expiry", new StatValue(((Integer)50), plugin));
+				BukkitTask task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable(){
+
+					public void run() {
+						if(shell.hasMetadata("shell.destroy")){
+							shell.remove();
+							tasks.get(shell.getUniqueId()).cancel();
+							tasks.remove(shell.getUniqueId());
+							return;
+						}
+						List<MetadataValue> metas = shell.getMetadata("shell.expiry");
+						int expiry = (Integer) ((StatValue) metas.get(0)).getValue();
+						expiry--;
+						if(expiry < 0){
+							shell.remove();
+							tasks.get(shell.getUniqueId()).cancel();
+							tasks.remove(shell.getUniqueId());
+							return;
+						}
+						shell.setTicksLived(1);
+						shell.setPickupDelay(Integer.MAX_VALUE);
+						shell.removeMetadata("shell.expiry", main.plugin);
+						shell.setMetadata("shell.expiry", new StatValue(expiry, main.plugin));
+						shellUpdateEvent event = new shellUpdateEvent(shell, null);
+					    main.plugin.getServer().getPluginManager().callEvent(event);
+						return;
+					}}, 3l, 3l);
+				tasks.put(shell.getUniqueId(), task);
+			}
 			else if(ItemStackFromId.equals(main.config.getString("mariokart.bomb"), inHand.getTypeId(), inHand.getDurability())){
 				inHand.setAmount(inHand.getAmount()-1);
 				final Vector vel = ply.getEyeLocation().getDirection();
@@ -349,6 +391,10 @@ public class MarioKart {
 					Player pl = plugin.getServer().getPlayer((String) pls[i]);
 					if(pl.getVehicle() != null){
 					if(pl.getVehicle() instanceof Minecart){
+						String msg = main.msgs.get("mario.hit");
+						msg = msg.replaceAll(Pattern.quote("%name%"), "pow block");
+						pl.getWorld().playSound(pl.getLocation(), Sound.STEP_WOOD, 1f, 0.25f);
+						pl.sendMessage(ChatColor.RED+msg);
 						main.listener.penalty((Minecart) pl.getVehicle(), 2);
 					}
 					}
