@@ -55,11 +55,13 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import com.useful.ucars.ItemStackFromId;
 import com.useful.ucars.ucarUpdateEvent;
 import com.useful.ucars.ucars;
 import com.useful.ucarsCommon.StatValue;
@@ -77,6 +79,9 @@ public class URaceListener implements Listener {
 			return;
 		}
 		double power = (time/2);
+		if(power < 1){
+			power = 1;
+		}
 		car.setMetadata("car.frozen", new StatValue(time, plugin));
 		car.setVelocity(new Vector(0,power,0));
 		plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable(){
@@ -89,7 +94,23 @@ public class URaceListener implements Listener {
 	}
 	@EventHandler
 	void bananas(PlayerPickupItemEvent event){
-		//TODO If banana, and race, penalty!
+		Item item = event.getItem();
+		ItemStack stack = item.getItemStack();
+		Player player = event.getPlayer();
+		if(!ucars.listener.inACar(player)){
+			return;
+		}
+		if(plugin.raceMethods.inAGame(player.getName()) == null){
+			return;
+		}
+		if(ItemStackFromId.equals(main.config.getString("mariokart.banana"), stack.getTypeId(), stack.getDurability())){
+			player.getWorld().playSound(player.getLocation(), Sound.SPLASH2, 1f, 0.5f);
+			item.remove();
+			this.penalty(((Minecart)player.getVehicle()), 1);
+			event.setCancelled(true);
+			return;
+		}
+		return;
 	}
 	@EventHandler
 	public void onWandClickEvent(PlayerInteractEvent event){
@@ -585,7 +606,6 @@ public class URaceListener implements Listener {
 	@EventHandler
 	void signClicker(PlayerInteractEvent event){
 		KartAction action = main.marioKart.calculate(event.getPlayer(), event);
-		//TODO execute basic on kartAction
 		if(event.getAction() != Action.RIGHT_CLICK_BLOCK){
 			return;
 		}

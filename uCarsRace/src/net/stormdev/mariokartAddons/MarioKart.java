@@ -36,6 +36,7 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
+import com.useful.ucars.ClosestFace;
 import com.useful.ucars.ucarUpdateEvent;
 import com.useful.ucars.ucars;
 import com.useful.ucarsCommon.StatValue;
@@ -352,6 +353,12 @@ public class MarioKart {
 					}
 					}
 				}
+				inHand.setAmount(inHand.getAmount()-1);
+			}
+			else if(ItemStackFromId.equals(main.config.getString("mariokart.banana"), inHand.getTypeId(), inHand.getDurability())){
+				BlockFace face = ClosestFace.getClosestFace(player.getLocation().getYaw());
+				Location loc = player.getLocation().getBlock().getRelative(face, -1).getLocation();
+				loc.getWorld().dropItemNaturally(loc, ItemStackFromId.get(main.config.getString("mariokart.banana")));
 				inHand.setAmount(inHand.getAmount()-1);
 			}
 			evt.getPlayer().setItemInHand(inHand);
