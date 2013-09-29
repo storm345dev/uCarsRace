@@ -14,7 +14,15 @@ import net.stormdev.ucars.utils.ItemStackFromId;
 import net.stormdev.ucars.utils.ValueComparator;
 import net.stormdev.ucars.utils.shellUpdateEvent;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Bat;
+import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -92,7 +100,6 @@ public class MarioKart {
 				ucars.listener.carBoost(ply.getName(), 19, 9000, ucars.config.getDouble("general.cars.defSpeed")); //Apply speed boost
 			}
 			else if(ItemStackFromId.equals(main.config.getString("mariokart.redShell"), inHand.getTypeId(), inHand.getDurability())){
-				//TODO auto tracking red shell
 				Race race = plugin.raceMethods.inAGame(player.getName());
 				if(race == null){
 					return null;
@@ -169,6 +176,70 @@ public class MarioKart {
 					}}, 3l, 3l);
 				tasks.put(shell.getUniqueId(), task);
 			}
+			else if(ItemStackFromId.equals(main.config.getString("mariokart.blueShell"), inHand.getTypeId(), inHand.getDurability())){
+				Race race = plugin.raceMethods.inAGame(player.getName());
+				if(race == null){
+					return null;
+				}
+				Map<String, Integer> scores = new HashMap<String, Integer>();
+				for(String pname:race.getPlayers()){
+					int laps = race.totalLaps - race.lapsLeft.get(pname) +1;
+					int checkpoints;
+					try {
+						checkpoints = race.checkpoints.get(pname);
+					} catch (Exception e) {
+						checkpoints = 0;
+					}
+					int score = (laps*race.getMaxCheckpoints()) + checkpoints;
+					try {
+						if(race.getWinner().equals(pname)){
+							score = score+1;
+						}
+					} catch (Exception e) {
+					}
+					scores.put(pname, score);
+				}
+				ValueComparator com = new ValueComparator(scores);
+		    	SortedMap<String, Integer> sorted = new TreeMap<String, Integer>(com);
+				sorted.putAll(scores);
+		    	Set<String> keys = sorted.keySet();
+				Object[] pls = (Object[]) keys.toArray();
+				final String targetName = (String) pls[0];
+				inHand.setAmount(inHand.getAmount()-1);
+				ItemStack toDrop = ItemStackFromId.get(main.config.getString("mariokart.blueShell"));
+				final Item shell = player.getLocation().getWorld().dropItem(player.getLocation(), toDrop);
+				//DEBUG: final Entity shell = player.getLocation().getWorld().spawnEntity(player.getLocation().add(0, 1.3, 0), EntityType.MINECART_CHEST);
+				shell.setPickupDelay(Integer.MAX_VALUE);
+				shell.setMetadata("shell.target", new StatValue(targetName, plugin));
+				shell.setMetadata("shell.expiry", new StatValue(((Integer)66), plugin));
+				BukkitTask task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable(){
+
+					public void run() {
+						if(shell.hasMetadata("shell.destroy")){
+							shell.remove();
+							tasks.get(shell.getUniqueId()).cancel();
+							tasks.remove(shell.getUniqueId());
+							return;
+						}
+						List<MetadataValue> metas = shell.getMetadata("shell.expiry");
+						int expiry = (Integer) ((StatValue) metas.get(0)).getValue();
+						expiry--;
+						if(expiry < 0){
+							shell.remove();
+							tasks.get(shell.getUniqueId()).cancel();
+							tasks.remove(shell.getUniqueId());
+							return;
+						}
+						shell.setTicksLived(1);
+						shell.setPickupDelay(Integer.MAX_VALUE);
+						shell.removeMetadata("shell.expiry", main.plugin);
+						shell.setMetadata("shell.expiry", new StatValue(expiry, main.plugin));
+						shellUpdateEvent event = new shellUpdateEvent(shell, targetName);
+					    main.plugin.getServer().getPluginManager().callEvent(event);
+						return;
+					}}, 3l, 3l);
+				tasks.put(shell.getUniqueId(), task);
+			}
 			else if(ItemStackFromId.equals(main.config.getString("mariokart.bomb"), inHand.getTypeId(), inHand.getDurability())){
 				inHand.setAmount(inHand.getAmount()-1);
 				final Vector vel = ply.getEyeLocation().getDirection();
@@ -194,11 +265,155 @@ public class MarioKart {
 						}
 					}});
 			}
+			else if(ItemStackFromId.equals(main.config.getString("mariokart.lightning"), inHand.getTypeId(), inHand.getDurability())){
+				Race race = plugin.raceMethods.inAGame(player.getName());
+				if(race == null){
+					return null;
+				}
+				Map<String, Integer> scores = new HashMap<String, Integer>();
+				for(String pname:race.getPlayers()){
+					int laps = race.totalLaps - race.lapsLeft.get(pname) +1;
+					int checkpoints;
+					try {
+						checkpoints = race.checkpoints.get(pname);
+					} catch (Exception e) {
+						checkpoints = 0;
+					}
+					int score = (laps*race.getMaxCheckpoints()) + checkpoints;
+					try {
+						if(race.getWinner().equals(pname)){
+							score = score+1;
+						}
+					} catch (Exception e) {
+					}
+					scores.put(pname, score);
+				}
+				ValueComparator com = new ValueComparator(scores);
+		    	SortedMap<String, Integer> sorted = new TreeMap<String, Integer>(com);
+				sorted.putAll(scores);
+		    	Set<String> keys = sorted.keySet();
+				Object[] pls = (Object[]) keys.toArray();
+				int ppos = 0;
+				for(int i=0;i<pls.length;i++){
+					if(pls[i].equals(player.getName())){
+						ppos = i;
+					}
+				}
+				for(int i=0;i<pls.length && i<ppos;i++){
+					Player pl = plugin.getServer().getPlayer((String) pls[i]);
+					pl.getWorld().strikeLightningEffect(pl.getLocation());
+					if(pl.getVehicle() != null){
+					if(pl.getVehicle() instanceof Minecart){
+						main.listener.penalty((Minecart) pl.getVehicle(), 4);
+					}
+					}
+				}
+				inHand.setAmount(inHand.getAmount()-1);
+			}
 			evt.getPlayer().setItemInHand(inHand);
 			evt.getPlayer().updateInventory(); //Fix 1.6 bug with inventory not updating
 		}
 		else if(event instanceof ucarUpdateEvent){
 			ucarUpdateEvent evt = (ucarUpdateEvent) event;
+			Minecart car = (Minecart) evt.getVehicle();
+			Block under  = car.getLocation().add(0, -1, 0).getBlock();
+			if(under.getType() == Material.COAL_BLOCK || under.getType() == Material.COAL_BLOCK || under.getType() == Material.COAL_BLOCK){
+				Sign sign = null;
+				Location uu = (Location) under.getRelative(BlockFace.DOWN).getLocation();
+				Location first = uu;
+				try {
+					sign = (Sign) uu.getBlock().getState();
+				} catch (Exception e) {
+					try {
+						uu = uu.getBlock().getRelative(BlockFace.SOUTH).getLocation();
+						sign = (Sign) uu.getBlock().getState();
+					} catch (Exception e1) {
+						try {
+							uu = uu.getBlock().getRelative(BlockFace.EAST).getLocation();
+							sign = (Sign) uu.getBlock().getState();
+						} catch (Exception e2) {
+							try {
+								uu = uu.getBlock().getRelative(BlockFace.NORTH).getLocation();
+								sign = (Sign) uu.getBlock().getState();
+							} catch (Exception e3) {
+								try {
+									uu = uu.getBlock().getRelative(BlockFace.WEST).getLocation();
+									sign = (Sign) uu.getBlock().getState();
+								} catch (Exception e4) {
+									try {
+										uu = uu.getBlock().getRelative(BlockFace.SOUTH).getLocation();
+										sign = (Sign) uu.getBlock().getState();
+									} catch (Exception e5) {
+										try {
+											uu = first.getBlock().getRelative(BlockFace.NORTH).getLocation();
+											sign = (Sign) uu.getBlock().getState();
+										} catch (Exception e6) {
+											try {
+												uu = first.getBlock().getRelative(BlockFace.EAST).getLocation();
+												sign = (Sign) uu.getBlock().getState();
+											} catch (Exception e7) {
+                                                return null;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				final String[] lines = sign.getLines();
+				if(ChatColor.stripColor(lines[0]).equalsIgnoreCase("[urace]")){
+					if(ChatColor.stripColor(lines[1]).equalsIgnoreCase("items")){
+						if(ChatColor.stripColor(lines[3]).equalsIgnoreCase("wait")){
+							return null;
+						}
+						ItemStack give = null;
+						if(ChatColor.stripColor(lines[2]).equalsIgnoreCase("all")){
+							//Give all items
+							ItemStack a = this.getRandomPowerup();
+							ItemStack b = this.getRandomBoost();
+							int randomNumber = plugin.random.nextInt(3);
+							if(randomNumber < 1){
+								give = b;
+							}
+							else{
+								give = a;
+							}
+						}
+						else if(ChatColor.stripColor(lines[2]).equalsIgnoreCase("mario")){
+							//Give mario items
+							give = this.getRandomPowerup();
+						}
+						else {
+							//Give normal (ucars) items
+							give = this.getRandomBoost();
+						}
+						Player ply = ((Player)car.getPassenger());
+						ply.getInventory().addItem(give);
+						ply.updateInventory();
+						List<Entity> ents = ply.getNearbyEntities(2, 3, 2);
+						for(Entity ent:ents){
+							if(ent instanceof EnderCrystal){
+								final Location loc = ent.getLocation();
+								lines[3] = "wait";
+								sign.setLine(3, "wait");
+								sign.update(true);
+								final Sign si = sign;
+								plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable(){
+
+									public void run() {
+										si.setLine(3, "ready");
+										si.update(true);
+										main.listener.spawnItemPickupBox(loc);
+										return;
+									}}, 200l);
+								ent.remove();
+							}
+						}
+						
+					}
+				}
+			}
 		}
 		//End calculations
 		kartAction.action = action;
@@ -206,6 +421,21 @@ public class MarioKart {
 		kartAction.freeze = freeze;
 		kartAction.destroy = destroy;
 		return kartAction;
+	}
+	public ItemStack getRandomBoost(){
+		int type = 1;
+		int min = 0;
+		Integer[] amts = new Integer[]{1,1,3,2,2,2,2};
+		int max = amts.length;
+		int randomNumber = plugin.random.nextInt(max - min) + min;
+		type = amts[randomNumber];
+		if(type == 1){
+			return ItemStackFromId.get(ucars.config.getString("general.cars.lowBoost"));
+		}
+		else if(type == 2){
+			return ItemStackFromId.get(ucars.config.getString("general.cars.medBoost"));
+		}
+	    return ItemStackFromId.get(ucars.config.getString("general.cars.highBoost"));
 	}
 	public ItemStack getRandomPowerup(){
 		Powerup[] pows = Powerup.values();

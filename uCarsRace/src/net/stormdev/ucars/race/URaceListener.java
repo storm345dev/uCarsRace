@@ -21,13 +21,18 @@ import net.stormdev.ucars.utils.TrackCreator;
 import net.stormdev.ucars.utils.ValueComparator;
 import net.stormdev.ucars.utils.shellUpdateEvent;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
@@ -47,8 +52,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import com.useful.ucars.ucarUpdateEvent;
@@ -61,6 +69,9 @@ public class URaceListener implements Listener {
 		this.plugin = plugin;
 	}
 	public void penalty(final Minecart car, long time){
+		if(car == null){
+			return;
+		}
 		if(car.hasMetadata("kart.immune")){
 			return;
 		}
@@ -634,6 +645,17 @@ public class URaceListener implements Listener {
 			    }
 				lines[1] = main.colors.getInfo() + cmd;
 			}
+			else if(cmd.equalsIgnoreCase("items")){
+				Location above = event.getBlock().getLocation().add(0, 1.4, 0);
+				EnderCrystal crystal = (EnderCrystal) above.getWorld().spawnEntity(above, EntityType.ENDER_CRYSTAL);
+				above.getBlock().setType(Material.COAL_BLOCK);
+				above.getBlock().getRelative(BlockFace.WEST).setType(Material.COAL_BLOCK);
+				above.getBlock().getRelative(BlockFace.NORTH).setType(Material.COAL_BLOCK);
+				above.getBlock().getRelative(BlockFace.NORTH_WEST).setType(Material.COAL_BLOCK);
+				crystal.setFireTicks(0);
+				crystal.setMetadata("race.pickup", new StatValue(true, plugin));
+				text = false;
+			}
 			else{
 				text = false;
 			}
@@ -642,6 +664,96 @@ public class URaceListener implements Listener {
 				lines[3] = ChatColor.ITALIC + "to use";
 			}
 		}
+	}
+	@EventHandler
+	void crystalExplode(EntityExplodeEvent event){
+		if(!(event.getEntity() instanceof EnderCrystal)){
+			return;
+		}
+		Entity crystal = event.getEntity();
+		//if(crystal.hasMetadata("race.pickup")){
+			event.setCancelled(true);
+			event.setYield(0);
+			Location newL = crystal.getLocation();
+			Location signLoc = null;
+			if((newL.add(0, -2.4, 0).getBlock().getState() instanceof Sign)){
+				signLoc = newL.add(0, -2.4, 0);
+			}
+			else{
+				return; //Let them destroy it
+			}
+			Location above = signLoc.add(0, 3.8, 0);
+			EnderCrystal newC = (EnderCrystal) above.getWorld().spawnEntity(above, EntityType.ENDER_CRYSTAL);
+			above.getBlock().setType(Material.COAL_BLOCK);
+			above.getBlock().getRelative(BlockFace.WEST).setType(Material.COAL_BLOCK);
+			above.getBlock().getRelative(BlockFace.NORTH).setType(Material.COAL_BLOCK);
+			above.getBlock().getRelative(BlockFace.NORTH_WEST).setType(Material.COAL_BLOCK);
+			newC.setFireTicks(0);
+			newC.setMetadata("race.pickup", new StatValue(true, plugin));
+		//}
+		
+		return;
+	}
+	public void spawnItemPickupBox(Location previous){
+		Location newL = previous;
+		Location signLoc = null;
+		if((newL.add(0, -2.4, 0).getBlock().getState() instanceof Sign)){
+			signLoc = newL.add(0, -2.4, 0);
+		}
+		else{
+			return; //Let them destroy it
+		}
+		Location above = signLoc.add(0, 3.8, 0);
+		EnderCrystal newC = (EnderCrystal) above.getWorld().spawnEntity(above, EntityType.ENDER_CRYSTAL);
+		above.getBlock().setType(Material.COAL_BLOCK);
+		above.getBlock().getRelative(BlockFace.WEST).setType(Material.COAL_BLOCK);
+		above.getBlock().getRelative(BlockFace.NORTH).setType(Material.COAL_BLOCK);
+		above.getBlock().getRelative(BlockFace.NORTH_WEST).setType(Material.COAL_BLOCK);
+		newC.setFireTicks(0);
+		newC.setMetadata("race.pickup", new StatValue(true, plugin));
+	}
+	@EventHandler (priority = EventPriority.MONITOR)
+	void playerFireProtection(EntityDamageEvent event){
+		if(event.getCause() != DamageCause.FIRE && event.getCause() != DamageCause.FIRE_TICK){
+			return;
+		}
+		if(!(event.getEntity() instanceof Player)){
+			return;
+		}
+		if(!ucars.listener.inACar((Player) event.getEntity())){
+			return;
+		}
+		if(plugin.raceMethods.inAGame(((HumanEntity) event.getEntity()).getName()) == null){
+			return;
+		}
+		Player player = ((Player)event.getEntity());
+		player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 2, 100));
+		double health = player.getHealth();
+		health = health + event.getDamage();
+		if(health > 20){
+			health = 20;
+		}
+		player.setHealth(health);
+		player.setFireTicks(0);
+		return;
+	}
+	@EventHandler
+	void carDeath(VehicleDamageEvent event){
+		if(!(event.getVehicle() instanceof Minecart)){
+			return;
+		}
+		if(!ucars.listener.isACar((Minecart) event.getVehicle())){
+			return;
+		}
+		if(plugin.raceMethods.inAGame(((HumanEntity) event.getVehicle().getPassenger()).getName()) == null){
+			return;
+		}
+		if(!main.config.getBoolean("mariokart.enable")){
+			return;
+		}
+		event.setDamage(0);
+		event.setCancelled(true);
+		return;
 	}
 	@EventHandler
 	void playerDeathEvent(PlayerDeathEvent event){
