@@ -794,7 +794,11 @@ public class URaceListener implements Listener {
 		if(!ucars.listener.isACar((Minecart) event.getVehicle())){
 			return;
 		}
-		if(plugin.raceMethods.inAGame(((HumanEntity) event.getVehicle().getPassenger()).getName()) == null){
+		try {
+			if(plugin.raceMethods.inAGame(((HumanEntity) event.getVehicle().getPassenger()).getName()) == null){
+				return;
+			}
+		} catch (Exception e) {
 			return;
 		}
 		if(!main.config.getBoolean("mariokart.enable")){

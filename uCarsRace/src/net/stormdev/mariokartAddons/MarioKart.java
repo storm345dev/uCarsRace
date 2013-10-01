@@ -81,6 +81,11 @@ public class MarioKart {
 						return null;
 					}
 					inHand.setAmount(inHand.getAmount()-1);
+					player.setItemInHand(inHand);
+					if((inHand.getAmount()-1)<1){
+						player.setItemInHand(new ItemStack(Material.AIR));
+					}
+					player.updateInventory();
 					Location loc = player.getLocation().getBlock().getRelative(ClosestFace.getClosestFace(car.getLocation().getYaw()), 4).getLocation();
 					ItemStack toDrop = ItemStackFromId.get(main.config.getString("mariokart.greenShell"));
 					final Item shell = player.getLocation().getWorld().dropItem(loc, toDrop);
