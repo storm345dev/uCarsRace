@@ -42,6 +42,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.block.BlockIgniteEvent.IgniteCause;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -764,6 +766,14 @@ public class URaceListener implements Listener {
 		above.getBlock().getRelative(BlockFace.NORTH_WEST).setType(Material.COAL_BLOCK);
 		newC.setFireTicks(0);
 		newC.setMetadata("race.pickup", new StatValue(true, plugin));
+	}
+	@EventHandler (priority = EventPriority.NORMAL)
+	void stopCrystalFire(BlockIgniteEvent event){
+		if(event.getCause() != IgniteCause.ENDER_CRYSTAL){
+			return;
+		}
+			event.setCancelled(true);
+		return;
 	}
 	@EventHandler (priority = EventPriority.MONITOR)
 	void playerFireProtection(EntityDamageEvent event){
