@@ -10,11 +10,13 @@ public class shellUpdateEvent extends Event{
 	Entity shell = null;
 	String targetName = null;
 	public Vector direction = null;
+	public Boolean cooldown = false;
 	
-	public shellUpdateEvent(Entity shell, String targetName, Vector direction){
+	public shellUpdateEvent(Entity shell, String targetName, Vector direction, Boolean cooldown){
 		this.shell = shell;
 		this.targetName = targetName;
 		this.direction = direction;
+		this.cooldown = cooldown;
 	}
 	public HandlerList getHandlers() {
 		return handlers;
@@ -28,5 +30,7 @@ public class shellUpdateEvent extends Event{
 	public String getTarget(){
 		return this.targetName;
 	}
-
+	public Boolean getCooldown(){
+		return this.cooldown;
+	}
 }

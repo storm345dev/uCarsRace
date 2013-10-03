@@ -207,12 +207,15 @@ public class URaceListener implements Listener {
 				else{
 					speed = 1.5;
 					Vector direction = event.direction;
+					if(!event.getCooldown()){
 					if(shellLoc.getBlock().getType() != Material.AIR && shellLoc.getBlock().getType() != Material.CARPET){
 						//Bounce
 						direction = direction.multiply(-1);
 					}
+					}
 					shell.setVelocity(direction);
-					if(shell.getNearbyEntities(2, 2, 2).size() > 0){
+					if(!event.getCooldown()){
+					 if(shell.getNearbyEntities(2, 2, 2).size() > 0){
 						List<Entity> nearby = shell.getNearbyEntities(2, 2, 2);
 						for(Entity entity:nearby){
 							if(entity instanceof Player){
@@ -229,6 +232,7 @@ public class URaceListener implements Listener {
 							}
 						}
 					}
+				  }
 				}
 				
 		return;

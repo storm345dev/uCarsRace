@@ -15,7 +15,6 @@ import net.stormdev.ucars.utils.ItemStackFromId;
 import net.stormdev.ucars.utils.ValueComparator;
 import net.stormdev.ucars.utils.shellUpdateEvent;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,11 +22,9 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
-import org.bukkit.entity.Bat;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
@@ -86,12 +83,14 @@ public class MarioKart {
 						player.setItemInHand(new ItemStack(Material.AIR));
 					}
 					player.updateInventory();
-					Location loc = player.getLocation().getBlock().getRelative(ClosestFace.getClosestFace(car.getLocation().getYaw()), 4).getLocation();
+					Location loc = player.getLocation().add(player.getLocation().getDirection().setY(0).multiply(4));
+					//Location loc = player.getLocation().getBlock().getRelative(ClosestFace.getClosestFace(car.getLocation().getYaw()), 4).getLocation();
 					ItemStack toDrop = ItemStackFromId.get(main.config.getString("mariokart.greenShell"));
 					final Item shell = player.getLocation().getWorld().dropItem(loc, toDrop);
 					//final FallingBlock shell = (FallingBlock) player.getLocation().getWorld().spawnFallingBlock(loc.add(0, 1.4, 0), Material.WOOL, (byte) 13);
 					//shell.setPickupDelay(Integer.MAX_VALUE);
 					shell.setMetadata("shell.target", new StatValue(null, plugin));
+					shell.setMetadata("shell.cooldown", new StatValue(((Integer)3), plugin));
 					shell.setMetadata("shell.expiry", new StatValue(((Integer)50), plugin));
 					BukkitTask task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable(){
 
@@ -110,6 +109,17 @@ public class MarioKart {
 								tasks.get(shell.getUniqueId()).cancel();
 								tasks.remove(shell.getUniqueId());
 								return;
+							}
+							Boolean cool = false;
+							List<MetadataValue> metas2 = shell.getMetadata("shell.cooldown");
+							int cooldown = (Integer) ((StatValue) metas2.get(0)).getValue();
+							if(cooldown > 0){
+								cooldown--;
+								cool = true;	
+							}
+							if(cooldown >=0){
+								shell.removeMetadata("shell.cooldown", main.plugin);
+								shell.setMetadata("shell.cooldown", new StatValue(cooldown, main.plugin));
 							}
 							shell.setTicksLived(1);
 							//shell.setPickupDelay(Integer.MAX_VALUE);
@@ -139,7 +149,7 @@ public class MarioKart {
 								z = (z/px)*speed;
 							}
 							Vector vel = new Vector(x, 0, z);
-							shellUpdateEvent event = new shellUpdateEvent(shell, null, vel);
+							shellUpdateEvent event = new shellUpdateEvent(shell, null, vel, cool);
 						    main.plugin.getServer().getPluginManager().callEvent(event);
 							return;
 						}}, 1l, 1l);
@@ -245,7 +255,7 @@ public class MarioKart {
 						shell.setPickupDelay(Integer.MAX_VALUE);
 						shell.removeMetadata("shell.expiry", main.plugin);
 						shell.setMetadata("shell.expiry", new StatValue(expiry, main.plugin));
-						shellUpdateEvent event = new shellUpdateEvent(shell, targetName, null);
+						shellUpdateEvent event = new shellUpdateEvent(shell, targetName, null, false);
 					    main.plugin.getServer().getPluginManager().callEvent(event);
 						return;
 					}}, 3l, 3l);
@@ -309,7 +319,7 @@ public class MarioKart {
 						shell.setPickupDelay(Integer.MAX_VALUE);
 						shell.removeMetadata("shell.expiry", main.plugin);
 						shell.setMetadata("shell.expiry", new StatValue(expiry, main.plugin));
-						shellUpdateEvent event = new shellUpdateEvent(shell, targetName, null);
+						shellUpdateEvent event = new shellUpdateEvent(shell, targetName, null, false);
 					    main.plugin.getServer().getPluginManager().callEvent(event);
 						return;
 					}}, 3l, 3l);
@@ -322,11 +332,13 @@ public class MarioKart {
 				}
 				inHand.setAmount(inHand.getAmount()-1);
 				ItemStack toDrop = ItemStackFromId.get(main.config.getString("mariokart.greenShell"));
-				Location loc = player.getLocation().getBlock().getRelative(ClosestFace.getClosestFace(car.getLocation().getYaw()), -4).getLocation();
+				Location loc = player.getLocation().add(player.getLocation().getDirection().multiply(-4));
+				//Location loc = player.getLocation().getBlock().getRelative(ClosestFace.getClosestFace(car.getLocation().getYaw()), -4).getLocation();
 				final Item shell = player.getLocation().getWorld().dropItem(loc, toDrop);
 				//DEBUG: final Entity shell = player.getLocation().getWorld().spawnEntity(player.getLocation().add(0, 1.3, 0), EntityType.MINECART_CHEST);
 				shell.setPickupDelay(Integer.MAX_VALUE);
 				shell.setMetadata("shell.target", new StatValue(null, plugin));
+				shell.setMetadata("shell.cooldown", new StatValue(((Integer)2), plugin));
 				shell.setMetadata("shell.expiry", new StatValue(((Integer)50), plugin));
 				BukkitTask task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable(){
 
@@ -345,6 +357,13 @@ public class MarioKart {
 							tasks.get(shell.getUniqueId()).cancel();
 							tasks.remove(shell.getUniqueId());
 							return;
+						}
+						Boolean cool = false;
+						List<MetadataValue> metas2 = shell.getMetadata("shell.cooldown");
+						int cooldown = (Integer) ((StatValue) metas2.get(0)).getValue();
+						if(cooldown > 0){
+							cooldown--;
+							cool = true;
 						}
 						shell.setTicksLived(1);
 						shell.setPickupDelay(Integer.MAX_VALUE);
@@ -374,7 +393,7 @@ public class MarioKart {
 							z = (z/px)*speed;
 						}
 						Vector vel = new Vector(-x, 0, -z);
-						shellUpdateEvent event = new shellUpdateEvent(shell, null, vel);
+						shellUpdateEvent event = new shellUpdateEvent(shell, null, vel, cool);
 					    main.plugin.getServer().getPluginManager().callEvent(event);
 						return;
 					}}, 3l, 3l);
