@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.logging.Level;
 
 import net.stormdev.ucars.utils.CheckpointCheck;
+import net.stormdev.ucars.utils.DoubleValueComparator;
 import net.stormdev.ucars.utils.RaceEndEvent;
 import net.stormdev.ucars.utils.RaceFinishEvent;
 import net.stormdev.ucars.utils.RaceStartEvent;
@@ -15,6 +18,7 @@ import net.stormdev.ucars.utils.RaceTrack;
 import net.stormdev.ucars.utils.RaceUpdateEvent;
 import net.stormdev.ucars.utils.SerializableLocation;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -22,7 +26,13 @@ import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
+
+import com.useful.ucarsCommon.StatValue;
 
 public class Race {
 	public List<String> players = new ArrayList<String>();
@@ -32,13 +42,19 @@ public class Race {
 	private String trackName = "";
 	private String winner = null;
 	public Boolean running = false;
+	public long tickrate = 6;
+	public long scorerate = 15;
 	private BukkitTask task = null;
+	private BukkitTask scoreCalcs = null;
 	public int maxCheckpoints = 3;
 	public int totalLaps = 3;
 	public ArrayList<String> finished = new ArrayList<String>();
 	public int finishCountdown = 60;
 	Boolean ending = false;
 	Boolean ended = false;
+	public Scoreboard board = null;
+	public Objective scores = null;
+	public Objective scoresBoard = null;
 	public Map<String, Integer> checkpoints = new HashMap<String, Integer>();
 	public Map<String, Integer> lapsLeft = new HashMap<String, Integer>();
 	public Map<String, ItemStack[]> oldInventories = new HashMap<String, ItemStack[]>();
@@ -48,6 +64,13 @@ public class Race {
 		this.trackName = trackName;
 		this.totalLaps = this.track.getLaps();
 		this.maxCheckpoints = this.track.getCheckpoints().size()-1;
+		this.tickrate = main.config.getLong("general.raceTickrate");
+		this.scorerate = (long) ((this.tickrate*2)+(this.tickrate/0.5));
+		this.board = main.plugin.getServer().getScoreboardManager().getNewScoreboard();
+		this.scores = board.registerNewObjective("", "dummy");
+	    scores.setDisplaySlot(DisplaySlot.BELOW_NAME);
+	    this.scoresBoard = board.registerNewObjective(ChatColor.GOLD+"Race Positions", "dummy");
+	    scoresBoard.setDisplaySlot(DisplaySlot.SIDEBAR);
 	}
 	public void setOldInventories(Map<String, ItemStack[]> inventories){
 		this.oldInventories = inventories;
@@ -115,7 +138,8 @@ public class Race {
 			player.setGameMode(GameMode.SURVIVAL);
 			player.teleport(player.getWorld().getSpawnLocation());
 			player.sendMessage(ChatColor.GOLD+"Successfully quit the race!");
-			}
+		    player.setScoreboard(main.plugin.getServer().getScoreboardManager().getMainScoreboard());	
+		}
 		for(String playerName:this.getPlayers()){
 			if(main.plugin.getServer().getPlayer(playerName) != null && main.plugin.getServer().getPlayer(playerName).isOnline()){
 				Player p=main.plugin.getServer().getPlayer(playerName);
@@ -191,13 +215,63 @@ public class Race {
     public void start(){
     	this.running = true;
     	final Race game = this;
+    	for(String pname:this.getInPlayers()){
+    		main.plugin.getServer().getPlayer(pname).setScoreboard(board);
+    	}
     	this.task = main.plugin.getServer().getScheduler().runTaskTimer(main.plugin, new Runnable(){
 
 			public void run() {
 				RaceUpdateEvent event = new RaceUpdateEvent(game);
 				main.plugin.getServer().getPluginManager().callEvent(event);
 				return;
-			}}, main.config.getLong("general.raceTickrate"), main.config.getLong("general.raceTickrate"));
+			}}, tickrate, tickrate);
+    	this.scoreCalcs = main.plugin.getServer().getScheduler().runTaskTimer(main.plugin, new Runnable(){
+
+			public void run() {
+				HashMap<String, Double> checkpointDists = new HashMap<String, Double>();
+				List<String> playerNames = game.getPlayers();
+				for(String pname:playerNames){
+					Player player = main.plugin.getServer().getPlayer(pname);
+					if(player.hasMetadata("checkpoint.distance")){
+						List<MetadataValue> metas = player.getMetadata("checkpoint.distance");
+						checkpointDists.put(pname, (Double) ((StatValue)metas.get(0)).getValue());
+					}
+				}
+				//TODO Order players and give each position above their head
+				Map<String,Double> scores = new HashMap<String,Double>();
+				for(String pname:game.getPlayers()){
+					int laps = game.totalLaps - game.lapsLeft.get(pname) +1;
+					int checkpoints;
+					try {
+						checkpoints = game.checkpoints.get(pname);
+					} catch (Exception e) {
+						checkpoints = 0;
+					}
+					double distance = 1/(checkpointDists.get(pname));
+					
+					double score = (laps*game.getMaxCheckpoints()) + checkpoints + distance;
+					try {
+						if(game.getWinner().equals(pname)){
+							score = score+1;
+						}
+					} catch (Exception e) {
+					}
+					scores.put(pname, score);
+			    }
+				DoubleValueComparator com = new DoubleValueComparator(scores);
+		    	SortedMap<String, Double> sorted = new TreeMap<String, Double>(com);
+				sorted.putAll(scores);
+				Object[] keys = sorted.keySet().toArray();
+				for(int i=0;i<sorted.size();i++){
+					String pname = (String) keys[i];
+					int pos = i+1;
+				    Player pl = main.plugin.getServer().getPlayer(pname);
+				    game.scores.getScore(pl).setScore(pos);
+				    game.scoresBoard.getScore(pl).setScore(pos);
+					//TODO display position above head
+				}
+				return;
+			}}, this.scorerate, this.scorerate);
     	try {
 			main.plugin.getServer().getPluginManager().callEvent(new RaceStartEvent(this));
 		} catch (Exception e) {
@@ -211,9 +285,17 @@ public class Race {
     	if(task != null){
     		task.cancel();
     	}
+    	if(scoreCalcs != null){
+    		scoreCalcs.cancel();
+    	}
+    	this.board.clearSlot(DisplaySlot.BELOW_NAME);
+    	this.board.clearSlot(DisplaySlot.SIDEBAR);
+    	this.scores.unregister();
+    	this.scoresBoard.unregister();
         ArrayList<String> pls = new ArrayList<String>();
         pls.addAll(this.inplayers);
     	for(String playername:pls){
+    		main.plugin.getServer().getPlayer(playername).setScoreboard(main.plugin.getServer().getScoreboardManager().getMainScoreboard());	
     		main.plugin.getServer().getPluginManager().callEvent(new RaceFinishEvent(this, playername));
     	}
     	RaceEndEvent evt = new RaceEndEvent(this);
@@ -236,15 +318,14 @@ public class Race {
     		if(schecks.containsKey(key)){
     			SerializableLocation sloc = schecks.get(key);
     			Location check = sloc.getLocation(server);
-        		if((check.getX()-10)<pl.getX() && (check.getX()+10) > pl.getX()){
-        			if((check.getZ()-10)<pl.getZ() && (check.getZ()+10) > pl.getZ()){
-            			if((check.getY()-5)<pl.getY() && (check.getY()+5) > pl.getY()){
-            				at = true;
-                			checkpoint = key;
-                			return new CheckpointCheck(at, checkpoint);
-            			}
-            		}
-        		}
+    			double dist = check.distanceSquared(pl); //Squared because of better performance
+    			p.removeMetadata("checkpoint.distance", main.plugin);
+    			p.setMetadata("checkpoint.distance", new StatValue(dist, main.plugin));
+        		if(dist < 100){
+        			at = true;
+        			checkpoint = key;
+        			return new CheckpointCheck(at, checkpoint);
+        		}		
     		}
     	}
     	return new CheckpointCheck(at, checkpoint);

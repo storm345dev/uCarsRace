@@ -465,7 +465,7 @@ public class URaceListener implements Listener {
 	}
 	@EventHandler
 	void RaceHandler(RaceUpdateEvent event){
-		Race game = event.getRace();
+		final Race game = event.getRace();
 		if(!game.getRunning()){
 			try {
 				plugin.gameScheduler.stopGame(game.getTrack(), game.getTrackName());
@@ -515,13 +515,6 @@ public class URaceListener implements Listener {
 					return;
 				}
 				*/
-				if(!(old==0) && !(old==game.getMaxCheckpoints()) && !(ch==0) &&!(ch==game.getMaxCheckpoints())){
-				if(old-2 > ch){
-					//They are going the wrong way!
-					player.sendMessage(main.colors.getError()+main.msgs.get("race.mid.backwards"));
-					return;
-				}
-				}
 				if(!(old>=ch)){
 					game.checkpoints.put(playername, check.checkpoint);
 				}
@@ -576,6 +569,7 @@ public class URaceListener implements Listener {
 			}
 		}
 		plugin.gameScheduler.updateGame(game);
+		return;
 	}
 	@EventHandler
 	void damage(EntityDamageEvent event){
