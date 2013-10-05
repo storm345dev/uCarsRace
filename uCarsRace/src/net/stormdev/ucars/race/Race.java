@@ -228,39 +228,7 @@ public class Race {
     	this.scoreCalcs = main.plugin.getServer().getScheduler().runTaskTimer(main.plugin, new Runnable(){
 
 			public void run() {
-				HashMap<String, Double> checkpointDists = new HashMap<String, Double>();
-				List<String> playerNames = game.getPlayers();
-				for(String pname:playerNames){
-					Player player = main.plugin.getServer().getPlayer(pname);
-					if(player.hasMetadata("checkpoint.distance")){
-						List<MetadataValue> metas = player.getMetadata("checkpoint.distance");
-						checkpointDists.put(pname, (Double) ((StatValue)metas.get(0)).getValue());
-					}
-				}
-				//TODO Order players and give each position above their head
-				Map<String,Double> scores = new HashMap<String,Double>();
-				for(String pname:game.getPlayers()){
-					int laps = game.totalLaps - game.lapsLeft.get(pname) +1;
-					int checkpoints;
-					try {
-						checkpoints = game.checkpoints.get(pname);
-					} catch (Exception e) {
-						checkpoints = 0;
-					}
-					double distance = 1/(checkpointDists.get(pname));
-					
-					double score = (laps*game.getMaxCheckpoints()) + checkpoints + distance;
-					try {
-						if(game.getWinner().equals(pname)){
-							score = score+1;
-						}
-					} catch (Exception e) {
-					}
-					scores.put(pname, score);
-			    }
-				DoubleValueComparator com = new DoubleValueComparator(scores);
-		    	SortedMap<String, Double> sorted = new TreeMap<String, Double>(com);
-				sorted.putAll(scores);
+		    	SortedMap<String, Double> sorted = game.getRaceOrder();
 				Object[] keys = sorted.keySet().toArray();
 				for(int i=0;i<sorted.size();i++){
 					String pname = (String) keys[i];
@@ -268,7 +236,6 @@ public class Race {
 				    Player pl = main.plugin.getServer().getPlayer(pname);
 				    game.scores.getScore(pl).setScore(pos);
 				    game.scoresBoard.getScore(pl).setScore(pos);
-					//TODO display position above head
 				}
 				return;
 			}}, this.scorerate, this.scorerate);
@@ -279,6 +246,42 @@ public class Race {
 			end();
 		}
     	return;
+    }
+    public SortedMap<String, Double> getRaceOrder(){
+    	Race game = this;
+    	HashMap<String, Double> checkpointDists = new HashMap<String, Double>();
+		List<String> playerNames = game.getPlayers();
+		for(String pname:playerNames){
+			Player player = main.plugin.getServer().getPlayer(pname);
+			if(player.hasMetadata("checkpoint.distance")){
+				List<MetadataValue> metas = player.getMetadata("checkpoint.distance");
+				checkpointDists.put(pname, (Double) ((StatValue)metas.get(0)).getValue());
+			}
+		}
+    	Map<String,Double> scores = new HashMap<String,Double>();
+		for(String pname:game.getPlayers()){
+			int laps = game.totalLaps - game.lapsLeft.get(pname) +1;
+			int checkpoints;
+			try {
+				checkpoints = game.checkpoints.get(pname);
+			} catch (Exception e) {
+				checkpoints = 0;
+			}
+			double distance = 1/(checkpointDists.get(pname));
+			
+			double score = (laps*game.getMaxCheckpoints()) + checkpoints + distance;
+			try {
+				if(game.getWinner().equals(pname)){
+					score = score+1;
+				}
+			} catch (Exception e) {
+			}
+			scores.put(pname, score);
+	    }
+		DoubleValueComparator com = new DoubleValueComparator(scores);
+    	SortedMap<String, Double> sorted = new TreeMap<String, Double>(com);
+		sorted.putAll(scores);
+		return sorted;
     }
     public void end(){
     	this.running = false;
