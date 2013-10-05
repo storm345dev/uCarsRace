@@ -147,7 +147,10 @@ public class Race {
 			}
 		}
 		}
-		recalculateGame();
+		try {
+			recalculateGame();
+		} catch (Exception e) {
+		}
 		return;
 	}
 	public void recalculateGame(){
@@ -155,7 +158,10 @@ public class Race {
 			this.running = false;
 			this.ended = true;
 			this.ending = true;
-			end();
+			try {
+				end();
+			} catch (Exception e) {
+			}
 			main.plugin.gameScheduler.reCalculateQues();
 		}
 	}
@@ -288,13 +294,25 @@ public class Race {
     	if(task != null){
     		task.cancel();
     	}
-    	if(scoreCalcs != null){
-    		scoreCalcs.cancel();
-    	}
-    	this.board.clearSlot(DisplaySlot.BELOW_NAME);
-    	this.board.clearSlot(DisplaySlot.SIDEBAR);
-    	this.scores.unregister();
-    	this.scoresBoard.unregister();
+    	try {
+			if(scoreCalcs != null){
+				scoreCalcs.cancel();
+			}
+		} catch (Exception e1) {
+		}
+    	try {
+			this.board.clearSlot(DisplaySlot.BELOW_NAME);
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			this.board.clearSlot(DisplaySlot.SIDEBAR);
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			this.scores.unregister();
+			this.scoresBoard.unregister();
+		} catch (IllegalStateException e) {
+		}
         ArrayList<String> pls = new ArrayList<String>();
         pls.addAll(this.inplayers);
     	for(String playername:pls){

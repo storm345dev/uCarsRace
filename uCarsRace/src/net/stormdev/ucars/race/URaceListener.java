@@ -135,7 +135,11 @@ public class URaceListener implements Listener {
 	@EventHandler (priority = EventPriority.MONITOR)
 	void powerups(ucarUpdateEvent event){
 		Player player = (Player) event.getVehicle().getPassenger();
-		if(plugin.raceMethods.inAGame(player.getName())==null){
+		try {
+			if(plugin.raceMethods.inAGame(player.getName())==null){
+				return;
+			}
+		} catch (Exception e) {
 			return;
 		}
 	    KartAction action = main.marioKart.calculate(player, event);
@@ -370,7 +374,10 @@ public class URaceListener implements Listener {
 			else {
 				pos = pos+"th";
 			}
-			msg = msg.replaceAll("%position%", ""+pos);
+			try {
+				msg = msg.replaceAll("%position%", ""+pos);
+			} catch (Exception e) {
+			}
 			p.sendMessage(main.colors.getSuccess()+msg);
 			}
 		}
