@@ -389,27 +389,7 @@ public class MarioKart {
 				if(race == null){
 					return null;
 				}
-				Map<String, Integer> scores = new HashMap<String, Integer>();
-				for(String pname:race.getPlayers()){
-					int laps = race.totalLaps - race.lapsLeft.get(pname) +1;
-					int checkpoints;
-					try {
-						checkpoints = race.checkpoints.get(pname);
-					} catch (Exception e) {
-						checkpoints = 0;
-					}
-					int score = (laps*race.getMaxCheckpoints()) + checkpoints;
-					try {
-						if(race.getWinner().equals(pname)){
-							score = score+1;
-						}
-					} catch (Exception e) {
-					}
-					scores.put(pname, score);
-				}
-				ValueComparator com = new ValueComparator(scores);
-		    	SortedMap<String, Integer> sorted = new TreeMap<String, Integer>(com);
-				sorted.putAll(scores);
+				SortedMap<String, Double> sorted = race.getRaceOrder();
 		    	Set<String> keys = sorted.keySet();
 				Object[] pls = (Object[]) keys.toArray();
 				int ppos = 0;
@@ -434,27 +414,7 @@ public class MarioKart {
 				if(race == null){
 					return null;
 				}
-				Map<String, Integer> scores = new HashMap<String, Integer>();
-				for(String pname:race.getPlayers()){
-					int laps = race.totalLaps - race.lapsLeft.get(pname) +1;
-					int checkpoints;
-					try {
-						checkpoints = race.checkpoints.get(pname);
-					} catch (Exception e) {
-						checkpoints = 0;
-					}
-					int score = (laps*race.getMaxCheckpoints()) + checkpoints;
-					try {
-						if(race.getWinner().equals(pname)){
-							score = score+1;
-						}
-					} catch (Exception e) {
-					}
-					scores.put(pname, score);
-				}
-				ValueComparator com = new ValueComparator(scores);
-		    	SortedMap<String, Integer> sorted = new TreeMap<String, Integer>(com);
-				sorted.putAll(scores);
+				SortedMap<String, Double> sorted = race.getRaceOrder();
 		    	Set<String> keys = sorted.keySet();
 				Object[] pls = (Object[]) keys.toArray();
 				int ppos = 0;
