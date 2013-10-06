@@ -119,6 +119,8 @@ public class Race {
 		if(quit){
 		this.checkpoints.remove(playername);
 		this.lapsLeft.remove(playername);
+    	this.scoresBoard.getScore(main.plugin.getServer().getOfflinePlayer(playername)).setScore(0);
+    	this.board.resetScores(main.plugin.getServer().getOfflinePlayer(playername));
 		if(player != null){
 			player.getInventory().clear();
 			if(player.getVehicle()!=null){
@@ -202,12 +204,21 @@ public class Race {
 					}
 				}
 				if(!ended){
-				main.plugin.getServer().getScheduler().runTask(main.plugin, new Runnable(){
+				try {
+					main.plugin.getServer().getScheduler().runTask(main.plugin, new Runnable(){
 
-					public void run() {
-						race.end();
-						return;
-					}});
+						public void run() {
+							race.end();
+							return;
+						}});
+				} catch (IllegalArgumentException e) {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e1) {
+					}
+					run();
+					return;
+				}
 				}
 				return;
 			}});
