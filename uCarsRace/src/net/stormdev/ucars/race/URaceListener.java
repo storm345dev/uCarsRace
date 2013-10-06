@@ -10,18 +10,16 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import net.stormdev.mariokartAddons.KartAction;
-import net.stormdev.mariokartAddons.Powerup;
 import net.stormdev.ucars.utils.CheckpointCheck;
+import net.stormdev.ucars.utils.DoubleValueComparator;
 import net.stormdev.ucars.utils.RaceEndEvent;
 import net.stormdev.ucars.utils.RaceFinishEvent;
 import net.stormdev.ucars.utils.RaceQue;
 import net.stormdev.ucars.utils.RaceStartEvent;
 import net.stormdev.ucars.utils.RaceUpdateEvent;
 import net.stormdev.ucars.utils.TrackCreator;
-import net.stormdev.ucars.utils.ValueComparator;
 import net.stormdev.ucars.utils.shellUpdateEvent;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -268,7 +266,7 @@ public class URaceListener implements Listener {
 		for(String inp:inplayers){
 			in = in+", "+inp; 
 		}
-		Map<String,Integer> scores = new HashMap<String,Integer>();
+		Map<String,Double> scores = new HashMap<String,Double>();
 		Boolean finished = false;
 		String playername = event.getPlayername();
 				Player player = plugin.getServer().getPlayer(playername);
@@ -297,6 +295,14 @@ public class URaceListener implements Listener {
 					finished = true;
 				}
 				else{
+					HashMap<String, Double> checkpointDists = new HashMap<String, Double>();
+					for(String pname:game.getPlayers()){
+						Player pp = main.plugin.getServer().getPlayer(pname);
+						if(pp.hasMetadata("checkpoint.distance")){
+							List<MetadataValue> metas = pp.getMetadata("checkpoint.distance");
+							checkpointDists.put(pname, (Double) ((StatValue)metas.get(0)).getValue());
+						}
+					}
 				for(String pname:game.getPlayers()){
 				int laps = game.totalLaps - game.lapsLeft.get(pname) +1;
 				int checkpoints;
@@ -305,7 +311,8 @@ public class URaceListener implements Listener {
 				} catch (Exception e) {
 					checkpoints = 0;
 				}
-				int score = (laps*game.getMaxCheckpoints()) + checkpoints;
+				double distance = 1/(checkpointDists.get(pname));
+				double score = (laps*game.getMaxCheckpoints()) + checkpoints + distance;
 				try {
 					if(game.getWinner().equals(pname)){
 						score = score+1;
@@ -320,8 +327,8 @@ public class URaceListener implements Listener {
 				player.getInventory().setContents(game.getOldInventories().get(player.getName()));
 				}
 		if(!finished){
-		ValueComparator com = new ValueComparator(scores);
-    	SortedMap<String, Integer> sorted = new TreeMap<String, Integer>(com);
+		DoubleValueComparator com = new DoubleValueComparator(scores);
+    	SortedMap<String, Double> sorted = new TreeMap<String, Double>(com);
 		sorted.putAll(scores);
     	Set<String> keys = sorted.keySet();
 		Object[] pls = (Object[]) keys.toArray();
@@ -636,7 +643,7 @@ public class URaceListener implements Listener {
 	}
 	@EventHandler
 	void signClicker(PlayerInteractEvent event){
-		KartAction action = main.marioKart.calculate(event.getPlayer(), event);
+		main.marioKart.calculate(event.getPlayer(), event);
 		if(event.getAction() != Action.RIGHT_CLICK_BLOCK){
 			return;
 		}
