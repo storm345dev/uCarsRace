@@ -156,7 +156,12 @@ public class URaceCommandExecutor implements CommandExecutor {
 			return false;
 		}
 		else if(cmd.getName().equalsIgnoreCase("urace")){
-            return urace(sender, args, player);
+            try {
+				return urace(sender, args, player);
+			} catch (Exception e) {
+				sender.sendMessage(main.colors.getError()+"An error occured: Make sure you entered the command correctly.");
+				return false;
+			}
 		}
 		
 		return false;
@@ -262,6 +267,10 @@ public class URaceCommandExecutor implements CommandExecutor {
 						int max = main.plugin.trackManager.getRaceTracks().size()-1;
 						if(main.plugin.trackManager.getRaceTracks().size() < 1){
 							//No tracks created
+							sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.full"));
+							return true;
+						}
+						if((max - min) < 1){
 							sender.sendMessage(main.colors.getError()+main.msgs.get("general.cmd.full"));
 							return true;
 						}
