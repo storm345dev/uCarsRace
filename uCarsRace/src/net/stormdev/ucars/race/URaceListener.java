@@ -9,7 +9,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-import net.stormdev.mariokartAddons.KartAction;
 import net.stormdev.ucars.utils.CheckpointCheck;
 import net.stormdev.ucars.utils.DoubleValueComparator;
 import net.stormdev.ucars.utils.RaceEndEvent;
@@ -129,25 +128,6 @@ public class URaceListener implements Listener {
 		}
 		creator.set(wand);
 		return;
-	}
-	@EventHandler (priority = EventPriority.MONITOR)
-	void powerups(ucarUpdateEvent event){
-		Player player = (Player) event.getVehicle().getPassenger();
-		try {
-			if(plugin.raceMethods.inAGame(player.getName())==null){
-				return;
-			}
-		} catch (Exception e) {
-			return;
-		}
-	    KartAction action = main.marioKart.calculate(player, event);
-	    if(action == null){
-	    	return;
-	    }
-	    if(action.getAction()==net.stormdev.mariokartAddons.Action.UNKNOWN){
-	    	return;
-	    }
-	    return;
 	}
 	@EventHandler (priority = EventPriority.LOWEST)
 	void trackingShells(shellUpdateEvent event){
@@ -643,7 +623,6 @@ public class URaceListener implements Listener {
 	}
 	@EventHandler
 	void signClicker(PlayerInteractEvent event){
-		main.marioKart.calculate(event.getPlayer(), event);
 		if(event.getAction() != Action.RIGHT_CLICK_BLOCK){
 			return;
 		}

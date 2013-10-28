@@ -11,7 +11,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 
-import net.stormdev.mariokartAddons.MarioKart;
 import net.stormdev.ucars.utils.Ques;
 import net.stormdev.ucars.utils.RaceMethods;
 import net.stormdev.ucars.utils.RaceQue;
@@ -45,7 +44,6 @@ public class main extends JavaPlugin {
 	public static Lang msgs = null;
 	public RaceMethods raceMethods = null;
 	public Random random = null;
-	public static MarioKart marioKart = null;
 	public void onEnable(){
 		random = new Random();
 		plugin = this;
@@ -298,7 +296,6 @@ public class main extends JavaPlugin {
 		this.raceMethods = new RaceMethods();
 		this.gameScheduler = new RaceScheduler();
 		//Setup marioKart
-		marioKart = new MarioKart(this);
 		logger.info("uCarsRace v"+plugin.getDescription().getVersion()+" has been enabled!");
 	}
 	
