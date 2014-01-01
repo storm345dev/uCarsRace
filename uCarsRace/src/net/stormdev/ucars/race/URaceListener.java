@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import net.stormdev.ucars.utils.CheckpointCheck;
 import net.stormdev.ucars.utils.DoubleValueComparator;
+import net.stormdev.ucars.utils.ItemStackFromId;
 import net.stormdev.ucars.utils.RaceEndEvent;
 import net.stormdev.ucars.utils.RaceFinishEvent;
 import net.stormdev.ucars.utils.RaceQue;
@@ -60,7 +61,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
-import com.useful.ucars.ItemStackFromId;
 import com.useful.ucars.ucarUpdateEvent;
 import com.useful.ucars.ucars;
 import com.useful.ucarsCommon.StatValue;
