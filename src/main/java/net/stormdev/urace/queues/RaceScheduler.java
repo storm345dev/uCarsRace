@@ -407,7 +407,7 @@ public class RaceScheduler {
 							new StatValue(null, uCarsRace.plugin));
 					cars.add(car);
 					if(fairCars){
-					    uCarsAPI.getAPI().setUseRaceControls(car.getUniqueId(), uCarsRace.plugin);
+					    uCarsAPI.getAPI().setUseRaceControls(car.getUniqueId(), uCarsRace.plugin); //Use the race+ control scheme
 					}
 				}
 			}
@@ -455,44 +455,6 @@ public class RaceScheduler {
 							}
 						}
 						for (int i = 10; i > 0; i--) {
-							try {
-								if (i == 10) {
-									//Beginning of race countdown sound...
-									try {
-										for(User u:users2){
-											try {
-												Player p = u.getPlayer();
-												if(p!=null){
-													p.playSound(p.getLocation(), Sound.NOTE_PLING, 1f, 1f);
-												}
-											} catch (Exception e) {
-												//Player has left
-											}
-										}
-									} catch (Exception e) {
-										// Player has left
-									}
-								}
-								if (i == 3) {
-									//Last 3..2..1.. countdown sound
-									try {
-										for(User u:users2){
-											try {
-												Player p = u.getPlayer();
-												if(p!=null){
-													p.playSound(p.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
-												}
-											} catch (Exception e) {
-												//Player has left
-											}
-										}
-									} catch (Exception e) {
-										// Player has left
-									}
-								}
-							} catch (Exception e) {
-								// Game ended
-							}
 							for (User user : users2) {
 								try {
 									Player p = user.getPlayer();

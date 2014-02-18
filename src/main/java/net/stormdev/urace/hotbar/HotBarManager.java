@@ -8,6 +8,7 @@ import java.util.Map;
 
 import net.stormdev.urace.uCarsRace.uCarsRace;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -32,6 +33,8 @@ public class HotBarManager {
 		im.setDisplayName(ChatColor.GREEN+"Respawn");
 		im.setLore(Arrays.asList("Respawn back on the track"));
 		respawn.setItemMeta(im);
+		
+		Bukkit.getPluginManager().registerEvents(new HotBarListener(), uCarsRace.plugin);
 	}
 
 	public void setHotBar(String player, RaceHotBar hotBar) {

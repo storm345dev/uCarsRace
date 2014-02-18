@@ -49,7 +49,7 @@ public class SignEventsListener implements Listener {
 				}
 				return;
 			}});
-		if (!ChatColor.stripColor(lines[0]).equalsIgnoreCase("[MarioKart]")) {
+		if (!ChatColor.stripColor(lines[0]).equalsIgnoreCase("[uCarsRace]")) {
 			return;
 		}
 		String cmd = ChatColor.stripColor(lines[1]);
@@ -66,19 +66,9 @@ public class SignEventsListener implements Listener {
 			uCarsRace.plugin.raceCommandExecutor.urace(event.getPlayer(), new String[] { "leave" },
 					event.getPlayer());
 		} else if (cmd.equalsIgnoreCase("join")) {
-			String mode = ChatColor.stripColor(lines[3]);
-			if (mode.length() > 0) {
-				uCarsRace.plugin.raceCommandExecutor.urace(event.getPlayer(), new String[] {
-						"join", ChatColor.stripColor(lines[2]).toLowerCase(),
-						mode }, event.getPlayer());
-			} else {
-				uCarsRace.plugin.raceCommandExecutor.urace(event.getPlayer(), new String[] {
-						"join", ChatColor.stripColor(lines[2]).toLowerCase() },
-						event.getPlayer());
-			}
-		} else if (cmd.equalsIgnoreCase("shop")) {
-			uCarsRace.plugin.raceCommandExecutor.urace(event.getPlayer(), new String[] { "shop" },
-					event.getPlayer());
+			uCarsRace.plugin.raceCommandExecutor.urace(event.getPlayer(), new String[] {
+				"join", ChatColor.stripColor(lines[2]).toLowerCase() },
+				event.getPlayer());
 		}
 		return;
 	}
@@ -86,8 +76,8 @@ public class SignEventsListener implements Listener {
 	@EventHandler
 	void signWriter(SignChangeEvent event) { //Handle people making signs
 		String[] lines = event.getLines();
-		if (ChatColor.stripColor(lines[0]).equalsIgnoreCase("[MarioKart]")) {
-			lines[0] = uCarsRace.colors.getTitle() + "[MarioKart]";
+		if (ChatColor.stripColor(lines[0]).equalsIgnoreCase("[uCarsRace]")) {
+			lines[0] = uCarsRace.colors.getTitle() + "[uCarsRace]";
 			Boolean text = true;
 			String cmd = ChatColor.stripColor(lines[1]);
 			if (cmd.equalsIgnoreCase("list")) {
