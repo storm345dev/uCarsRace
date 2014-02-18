@@ -9,7 +9,7 @@
         <url>https://github.com/storm345dev/ucarsrace</url>
     </issueManagement>
     <build>
-        <finalName>MarioKart</finalName>
+        <finalName>uCarsRace</finalName>
         <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
         <resources>
             <resource>

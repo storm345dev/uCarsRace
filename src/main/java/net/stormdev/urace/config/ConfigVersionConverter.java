@@ -9,6 +9,7 @@ import net.stormdev.urace.utils.IdMaterialConverter;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 public class ConfigVersionConverter {
 	public static FileConfiguration convert(FileConfiguration config, double target){
@@ -28,18 +29,12 @@ public class ConfigVersionConverter {
 	}
 	public static FileConfiguration fromV1ToV2(FileConfiguration config){
 		//Convert needed formats
-		convertItemFormat(config, "mariokart.redShell");
-		convertItemFormat(config, "mariokart.greenShell");
-		convertItemFormat(config, "mariokart.blueShell");
-		convertItemFormat(config, "mariokart.banana");
-		convertItemFormat(config, "mariokart.star");
-		convertItemFormat(config, "mariokart.lightning");
-		convertItemFormat(config, "mariokart.bomb");
-		convertItemFormat(config, "mariokart.boo");
-		convertItemFormat(config, "mariokart.pow");
-		convertItemFormat(config, "mariokart.random");
-		convertItemFormat(config, "mariokart.mushroom");
-		uCarsRace.plugin.getLogger().info("Config successfully converted!");
+		try {
+			uCarsRace.plugin.getLogger().info("Config successfully converted!");
+		} catch (Exception e) {
+			config = new YamlConfiguration();
+			PluginConfigurator.load(config);
+		}
 		return config;
 	}
 	public static FileConfiguration convertItemFormat(FileConfiguration config, String configKey){

@@ -123,7 +123,7 @@ public class RaceScheduler {
 		if (!added) {
 			toJoin.addPlayer(player);
 		}
-		toJoin.broadcast(uCarsRace.colors.getTitle() + "[MarioKart:] "
+		toJoin.broadcast(uCarsRace.colors.getTitle() + "[uCarsRace:] "
 				+ uCarsRace.colors.getInfo() + player.getName()
 				+ uCarsRace.msgs.get("race.que.joined") + " ["
 				+ toJoin.playerCount() + "/" + toJoin.playerLimit() + "]");
@@ -161,7 +161,7 @@ public class RaceScheduler {
 			queue.addPlayer(player);
 			added = true;
 		}
-		queue.broadcast(uCarsRace.colors.getTitle() + "[MarioKart:] "
+		queue.broadcast(uCarsRace.colors.getTitle() + "[uCarsRace:] "
 				+ uCarsRace.colors.getInfo() + player.getName()
 				+ uCarsRace.msgs.get("race.que.joined") + " [" + queue.playerCount()
 				+ "/" + queue.playerLimit() + "]");
@@ -407,7 +407,7 @@ public class RaceScheduler {
 							new StatValue(null, uCarsRace.plugin));
 					cars.add(car);
 					if(fairCars){
-						uCarsAPI.getAPI().setUseRaceControls(car.getUniqueId(), uCarsRace.plugin);
+					    uCarsAPI.getAPI().setUseRaceControls(car.getUniqueId(), uCarsRace.plugin);
 					}
 				}
 			}
@@ -557,7 +557,7 @@ public class RaceScheduler {
 	public synchronized void lockdown(){
 		//Running out of system memory!
 		this.lockdown = true;
-		uCarsRace.logger.info("[WANRING] Memory resources low, MarioKart has locked down all queues "
+		uCarsRace.logger.info("[WANRING] Memory resources low, uCarsRace has locked down all queues "
 				+ "and may start to terminate races if condition persists!");
 		return;
 	}
@@ -569,7 +569,7 @@ public class RaceScheduler {
 	public synchronized void unlockDown(){
 		//System regained necessary memory
 		this.lockdown = false;
-		uCarsRace.logger.info("[INFO] System memory stable once more, MarioKart has unlocked all queues!");
+		uCarsRace.logger.info("[INFO] System memory stable once more, uCarsRace has unlocked all queues!");
 		return;
 	}
 

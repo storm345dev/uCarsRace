@@ -123,7 +123,7 @@ public class RaceQueue {
 			return false;
 		}
 		for (String s : leftPlayers) {
-			broadcast(uCarsRace.colors.getTitle() + "[MarioKart:] "
+			broadcast(uCarsRace.colors.getTitle() + "[uCarsRace:] "
 					+ uCarsRace.colors.getInfo() + s
 					+ uCarsRace.msgs.get("race.que.left"));
 		}
@@ -166,7 +166,7 @@ public class RaceQueue {
 	public void removePlayer(Player player) {
 		players.remove(player);
 		validatePlayers();
-		broadcast(uCarsRace.colors.getTitle() + "[MarioKart:] "
+		broadcast(uCarsRace.colors.getTitle() + "[uCarsRace:] "
 				+ uCarsRace.colors.getInfo() + player.getName()
 				+ uCarsRace.msgs.get("race.que.left"));
 		uCarsRace.plugin.raceQueues.updateQueue(this);

@@ -103,10 +103,9 @@ public class SignManager {
 	    	RaceQueue queue = queues.get(id);
 	    	if(queue != null){
 	    		try {
-					String line = uCarsRace.colors.getTitle()+"["+queue.currentPlayerCount()+"/"+queue.playerLimit()+"]("
-							+queue.getRaceMode().name().toLowerCase()+")";
+					String line = uCarsRace.colors.getTitle()+"["+queue.currentPlayerCount()+"/"+queue.playerLimit()+"]";
 					if(line.length() > 15){
-						line = uCarsRace.colors.getTitle()+"["+queue.currentPlayerCount()+"/"+queue.playerLimit()+"]";
+						line = line.substring(0, 16);
 					}
 					otherLines.add(line);
 				} catch (Exception e) {

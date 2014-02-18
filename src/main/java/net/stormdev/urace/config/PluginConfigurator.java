@@ -76,27 +76,6 @@ public class PluginConfigurator {
 		if (!config.contains("general.race.music.enable")) {
 			config.set("general.race.music.enable", true);
 		}
-		if(!config.contains("general.upgrades.enable")){
-			config.set("general.upgrades.enable", true);
-		}
-		if (!config.contains("general.upgrades.useSQL")) {
-			config.set("general.upgrades.useSQL", false);
-		}
-		if (!config.contains("general.upgrades.sqlHostName")) {
-			config.set("general.upgrades.sqlHostName", "localhost");
-		}
-		if (!config.contains("general.upgrades.sqlPort")) {
-			config.set("general.upgrades.sqlPort", "3306");
-		}
-		if (!config.contains("general.upgrades.sqlDataBaseName")) {
-			config.set("general.upgrades.sqlDataBaseName", "myDataBase");
-		}
-		if (!config.contains("general.upgrades.sqlUsername")) {
-			config.set("general.upgrades.sqlUsername", "root");
-		}
-		if (!config.contains("general.upgrades.sqlPassword")) {
-			config.set("general.upgrades.sqlPassword", "password123");
-		}
 		if (!config.contains("general.ensureEqualCarSpeed")) {
 			config.set("general.ensureEqualCarSpeed", true);
 		}
@@ -106,73 +85,21 @@ public class PluginConfigurator {
 		if (!config.contains("general.optimiseAtRuntime")) {
 			config.set("general.optimiseAtRuntime", true);
 		}
-		if (!config.contains("bitlyUrlShortner")) {
-			config.set("bitlyUrlShortner", true);
-		}
-		if (!config.contains("mariokart.resourcePack") || 
-				config.getString("mariokart.resourcePack").equalsIgnoreCase( //Stop dropbox link due to bandwidth over-use
-						"https://dl.dropboxusercontent.com/u/147363358/MarioKart/Resource/MarioKart-latest.zip")
-				||
-				config.getString("mariokart.resourcePack").equalsIgnoreCase( //Stop dropbox link due to bandwidth over-use
-						"http://storm345.hj.cx/Uploads/Bukkit/MarioKart/MarioKart-latest.zip")
-				) {
-			//https://dl.dropboxusercontent.com/u/147363358/MarioKart/Resource/MarioKart-latest.zip
-			//http://storm345.hj.cx/Uploads/Bukkit/MarioKart/MarioKart-latest.zip
-			config.set(
-					"mariokart.resourcePack",
-					"DEFAULT_CURSEFORGE_PACK");
-		}
-		if (!config.contains("mariokart.enable")) {
-			config.set("mariokart.enable", true);
-		}
-		if (!config.contains("mariokart.redShell")) {
-			config.set("mariokart.redShell", "INK_SACK:1");
-		}
-		if (!config.contains("mariokart.greenShell")) {
-			config.set("mariokart.greenShell", "INK_SACK:2");
-		}
-		if (!config.contains("mariokart.blueShell")) {
-			config.set("mariokart.blueShell", "INK_SACK:12");
-		}
-		if (!config.contains("mariokart.banana")) {
-			config.set("mariokart.banana", "INK_SACK:11");
-		}
-		if (!config.contains("mariokart.star")) {
-			config.set("mariokart.star", "NETHER_STAR:0");
-		}
-		if (!config.contains("mariokart.lightning")) {
-			config.set("mariokart.lightning", "INK_SACK:7");
-		}
-		if (!config.contains("mariokart.bomb")) {
-			config.set("mariokart.bomb", "TNT:0");
-		}
-		if (!config.contains("mariokart.boo")) {
-			config.set("mariokart.boo", "BONE");
-		}
-		if (!config.contains("mariokart.pow")) {
-			config.set("mariokart.pow", "ICE");
-		}
-		if (!config.contains("mariokart.random")) {
-			config.set("mariokart.random", "STAINED_CLAY:4");
-		}
-		if (!config.contains("mariokart.mushroom")) {
-			config.set("mariokart.mushroom", "RED_MUSHROOM");
-		}
 		// Setup the colour scheme
 		if (!config.contains("colorScheme.success")) {
-			config.set("colorScheme.success", "&c");
+			config.set("colorScheme.success", "&a");
 		}
 		if (!config.contains("colorScheme.error")) {
-			config.set("colorScheme.error", "&7");
+			config.set("colorScheme.error", "&4");
 		}
 		if (!config.contains("colorScheme.info")) {
 			config.set("colorScheme.info", "&6");
 		}
 		if (!config.contains("colorScheme.title")) {
-			config.set("colorScheme.title", "&4");
+			config.set("colorScheme.title", "&9");
 		}
 		if (!config.contains("colorScheme.tp")) {
-			config.set("colorScheme.tp", "&1");
+			config.set("colorScheme.tp", "&b");
 		}
 	}
 }

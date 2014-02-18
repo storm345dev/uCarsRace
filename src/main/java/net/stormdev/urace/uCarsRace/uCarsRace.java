@@ -193,7 +193,7 @@ public class uCarsRace extends JavaPlugin {
 			} catch (Exception e) {
 				plugin.getLogger()
 						.warning(
-								"Attempted to enable rewards and shop but Vault/Economy NOT found. Please install vault to use these features!");
+								"Attempted to enable rewards but Vault/Economy NOT found. Please install vault to use these features!");
 				plugin.getLogger().warning("Disabling reward system...");
 				plugin.getLogger().warning("Disabling shop system...");
 				uCarsRace.config.set("general.race.rewards.enable", false);
@@ -224,7 +224,7 @@ public class uCarsRace extends JavaPlugin {
 		}
 		
 		System.gc();
-		logger.info("MarioKart v" + plugin.getDescription().getVersion()
+		logger.info("uCarsRace v" + plugin.getDescription().getVersion()
 				+ " has been enabled!");
 	}
 
@@ -251,7 +251,7 @@ public class uCarsRace extends JavaPlugin {
 		
 		this.upgradeManager.unloadSQL();
 		
-		logger.info("MarioKart has been disabled!");
+		logger.info("uCarsRace has been disabled!");
 		System.gc();
 	}
 

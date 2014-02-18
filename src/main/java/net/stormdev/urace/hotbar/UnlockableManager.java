@@ -51,7 +51,7 @@ public class UnlockableManager {
 				sql = false;
 			}
 			if (sql) { // Check that it loaded okay...
-				sqlManager.createTable("MarioKartUnlocks", new String[] {
+				sqlManager.createTable("uRaceUnlocks", new String[] {
 						"playername", "unlocks" }, new String[] {
 						"varchar(255)", "varchar(255)" });
 			}
@@ -364,7 +364,6 @@ public class UnlockableManager {
 		if (unlocks != null) {
 			return unlocks;
 		}
-		uCarsRace.logger.info("Loading upgrades...");
 		// Begin load them from a YAML file
 		Map<String, Unlockable> unlockables = new HashMap<String, Unlockable>();
 		File saveFile = new File(uCarsRace.plugin.getDataFolder().getAbsolutePath()
