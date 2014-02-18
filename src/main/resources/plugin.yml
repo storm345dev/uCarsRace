@@ -17,9 +17,3 @@ commands:
         permission: ucarsrace.race
         permission-message: You don't have access to this command
         default: true
-   uracetimes:
-        description: Shows the top X race times for a track.
-        usage: /<command> <TrackName> <Amount>
-        permission: ucarsrace.race
-        permission-message: You don't have access to this command
-        default: true
