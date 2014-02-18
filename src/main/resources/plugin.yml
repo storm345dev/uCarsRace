@@ -1,0 +1,25 @@
+name: uCarsRace
+main: net.stormdev.urace.uCarsRace.uCarsRace
+version: 4
+softdepend: [Vault]
+depend: [uCars]
+commands:
+   RaceAdmin:
+        aliases: [ra]
+        description: This is the setup of racetracks and admin commands
+        usage: /<command> [Create <TrackName> <Laps>] [Delete <TrackName>] [List (Page)] [Races (Page)] [End <RaceTrack>/Endall] [setLaps <TrackName> <Laps>]
+        permission: ucarsrace.raceadmin
+        permission-message: You don't have access to this command
+        default: op
+   urace:
+        description: This is the playing of race tracks
+        usage: /<command> [List (Page)] [Join <Track>/"auto"] [Leave] [Queues]
+        permission: ucarsrace.race
+        permission-message: You don't have access to this command
+        default: true
+   uracetimes:
+        description: Shows the top X race times for a track.
+        usage: /<command> <TrackName> <Amount>
+        permission: ucarsrace.race
+        permission-message: You don't have access to this command
+        default: true
