@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,12 +13,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import net.stormdev.urace.uCarsRace.uCarsRace;
+
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-
-import net.stormdev.urace.uCarsRace.SQLManager;
-import net.stormdev.urace.uCarsRace.uCarsRace;
 
 public class UnlockableManager {
 
@@ -27,45 +25,20 @@ public class UnlockableManager {
 	private Map<String, Unlockable> unlocks = null; // ShortId:Unlockable
 	private File saveFile = null;
 	private boolean sql = false;
-	private SQLManager sqlManager = null;
 	private boolean enabled = true;
 
 	public UnlockableManager(File saveFile, Boolean sql) {
 		this.saveFile = saveFile;
-		this.sql = sql;
+		this.sql = false;
 		this.unlocks = getUnlocks();
 		this.enabled = uCarsRace.config.getBoolean("general.upgrades.enable");
-		if (sql) {
-			try {
-				sqlManager = new SQLManager(
-						uCarsRace.config.getString("general.upgrades.sqlHostName"),
-						uCarsRace.config.getString("general.upgrades.sqlPort"),
-						uCarsRace.config
-								.getString("general.upgrades.sqlDataBaseName"),
-						uCarsRace.config.getString("general.upgrades.sqlUsername"),
-						uCarsRace.config.getString("general.upgrades.sqlPassword"));
-			} catch (Exception e) {
-				sql = false;
-			}
-			if (!sqlManager.isValid()) {
-				sql = false;
-			}
-			if (sql) { // Check that it loaded okay...
-				sqlManager.createTable("uRaceUnlocks", new String[] {
-						"playername", "unlocks" }, new String[] {
-						"varchar(255)", "varchar(255)" });
-			}
-		}
 		// SQL setup...
 		unlocks = getUnlocks();
 		load(); // Load the data
 	}
 	
 	public synchronized void unloadSQL(){
-		if(this.sqlManager != null){
-			this.sqlManager.closeConnection();
-		}
-		return;
+		//Null
 	}
 
 	public List<Upgrade> getUpgrades(String playerName) {
@@ -275,27 +248,16 @@ public class UnlockableManager {
 
 	@SuppressWarnings("unchecked")
 	public void load() {
-		if (!sql) {
-			if (!(this.saveFile.length() < 1 || !this.saveFile.exists())) {
-				// Load from file
-				try {
-					ObjectInputStream ois = new ObjectInputStream(
-							new FileInputStream(this.saveFile));
-					Object result = ois.readObject();
-					ois.close();
-					data = (Map<String, String>) result;
-				} catch (Exception e) {
-					// File just created
-				}
-			}
-		} else {
-			// Load from sql
+		if (!(this.saveFile.length() < 1 || !this.saveFile.exists())) {
+			// Load from file
 			try {
-				data.putAll(sqlManager.getStringsFromTable("MarioKartUnlocks",
-						"playername", "unlocks"));
-			} catch (SQLException e) {
-				// SQL Error
-				e.printStackTrace();
+				ObjectInputStream ois = new ObjectInputStream(
+						new FileInputStream(this.saveFile));
+				Object result = ois.readObject();
+				ois.close();
+				data = (Map<String, String>) result;
+			} catch (Exception e) {
+				// File just created
 			}
 		}
 	}
@@ -306,42 +268,21 @@ public class UnlockableManager {
 
 					@Override
 					public void run() {
-						if (!sql) {
-							saveFile.getParentFile().mkdirs();
-							if (!saveFile.exists() || saveFile.length() < 1) {
-								try {
-									saveFile.createNewFile();
-								} catch (IOException e) {
-								}
-							}
+						saveFile.getParentFile().mkdirs();
+						if (!saveFile.exists() || saveFile.length() < 1) {
 							try {
-								ObjectOutputStream oos = new ObjectOutputStream(
-										new FileOutputStream(saveFile));
-								oos.writeObject(data);
-								oos.flush();
-								oos.close();
-							} catch (Exception e) {
-								e.printStackTrace();
+								saveFile.createNewFile();
+							} catch (IOException e) {
 							}
-							return;
 						}
-						// Save to SQL
-						if (data.containsKey(playerName)) {
-							try {
-								sqlManager.setInTable("MarioKartUnlocks",
-										"playername", playerName, "unlocks",
-										data.get(playerName));
-							} catch (SQLException e) {
-								// SQL Error
-								e.printStackTrace();
-							}
-						} else {
-							try {
-								sqlManager.deleteFromTable("MarioKartUnlocks",
-										"playername", playerName, "unlocks");
-							} catch (SQLException e) {
-								// Player wasn't in database
-							}
+						try {
+							ObjectOutputStream oos = new ObjectOutputStream(
+									new FileOutputStream(saveFile));
+							oos.writeObject(data);
+							oos.flush();
+							oos.close();
+						} catch (Exception e) {
+							e.printStackTrace();
 						}
 						return;
 					}
