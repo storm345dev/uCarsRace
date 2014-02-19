@@ -125,5 +125,5 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <description>The uCarsRace plugin found at http://dev.bukkit.org/bukkit-plugins/ucars-race/</description>
-    <version>4</version>
+    <version>5</version>
 </project>
